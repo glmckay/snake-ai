@@ -105,7 +105,8 @@ def play_game(game):
     atexit.register(cleanup)
 
     curses.initscr()
-    win = curses.newwin(game.width + 2, game.height + 4, 0, 0)
+    # +2 for the borders
+    win = curses.newwin(game.width + 2, game.height + 2, 0, 0)
 
     try:
         play_game_helper(game, win)
@@ -116,11 +117,10 @@ def play_game(game):
 
 def play_game_helper(game, win):
 
-    win.keypad(1)
-    curses.noecho()
-    curses.curs_set(0)
-    win.border(0)
-    win.nodelay(1)
+    win.keypad(True)  # interpret escape sequences (in particular arrow keys)
+    curses.noecho()  # don't echo input characters
+    curses.curs_set(0)  # invisible cursor
+    win.nodelay(True)  # make getch non-blocking
 
     char_map = {
         SnakeGame.HEAD: "o",
@@ -165,8 +165,7 @@ def play_game_helper(game, win):
     while key != KEY_ESC:
         win.border(0)
         win.timeout(100)
-
-        win.addstr(0, 2, f"Score : {game.score} ")  # Printing 'Score' and
+        win.addstr(0, 2, f"Score : {game.score} ")
         if game.game_over:
             win.addstr(game.height + 1, 2, "Game over")
 
