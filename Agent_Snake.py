@@ -65,3 +65,18 @@ def compute_loss(logits, actions, rewards):
     neg_logprob = tf.nn.sparse_softmax_cross_entropy_with_logits(logits= logits, labels= actions)
     loss = tf.reduce_mean(neg_logprob * rewards)
     return loss
+
+### train function ###
+# Arguments:
+#   model: network model
+#   optimizer: tf optimizer
+#   observations: inputs from the game state
+#   actions: the actions the agent took in an episode
+#   rewards: the rewards the agent received in an episode
+def train_step(model, optimizer, observations, actions, discounted_rewards):
+    with tf.GradientTape() as tape:
+        logits = model(observations)
+        loss = compute_loss(logits, actions, discounted_rewards)
+
+    grads = tape.gradient(loss, model.trainable_variables)
+    optimizer.apply_gradients(zip(grads, model.trainable_variables))
