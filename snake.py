@@ -23,7 +23,7 @@ class SnakeGame:
         DOWN = (1, 0)
         LEFT = (0, -1)
 
-    def __init__(self, width, height, on_new_fruit=None, on_snake_move=None):
+    def __init__(self, width, height):
 
         assert width >= 3 and height >= 3
 
@@ -34,9 +34,10 @@ class SnakeGame:
         self.snake_direction = SnakeGame.Move.RIGHT.value
         self.fruits = []
         self.score = 0
+        self.just_ate_fruit = False
         self.game_over = False
-        self.on_new_fruit = on_new_fruit
-        self.on_snake_move = on_snake_move
+        self.on_new_fruit = None
+        self.on_snake_move = None
 
         # snake initial position
         center_row = self.height // 2
@@ -74,6 +75,7 @@ class SnakeGame:
             return
         elif self.board[new_head] == SnakeGame.FRUIT:
             self.score += 1
+            self.just_ate_fruit = True
             self.fruits.remove(new_head)
             self.spawn_fruit()
             old_tail = None
@@ -90,6 +92,7 @@ class SnakeGame:
             self.on_snake_move(new_head, old_head, old_tail)
 
     def tick(self, new_direction):
+        self.just_ate_fruit = False
         if new_direction is not None:
             self.snake_direction = new_direction.value
         self.move_snake()
@@ -120,7 +123,7 @@ def play_game_helper(game, win):
     win.nodelay(1)
 
     char_map = {
-        SnakeGame.HEAD: "*",
+        SnakeGame.HEAD: "o",
         SnakeGame.BODY: "+",
         SnakeGame.FRUIT: "#",
         SnakeGame.BLANK: " ",
@@ -166,8 +169,6 @@ def play_game_helper(game, win):
         win.addstr(0, 2, f"Score : {game.score} ")  # Printing 'Score' and
         if game.game_over:
             win.addstr(game.height + 1, 2, "Game over")
-        # win.addstr(0, game.width - len(win_title), win_title)  # 'SNAKE' strings
-        # win.timeout(150 - (len(game.snake) // 5 + len(game.snake) // 10) % 120)
 
         event = win.getch()
         key = None if event == -1 else event
