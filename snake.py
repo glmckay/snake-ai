@@ -106,7 +106,7 @@ def play_game(game):
 
     curses.initscr()
     # +2 for the borders
-    win = curses.newwin(game.width + 2, game.height + 2, 0, 0)
+    win = curses.newwin(game.height + 2, game.width + 2, 0, 0)
 
     try:
         play_game_helper(game, win)
@@ -120,6 +120,7 @@ def play_game_helper(game, win):
     win.keypad(True)  # interpret escape sequences (in particular arrow keys)
     curses.noecho()  # don't echo input characters
     curses.curs_set(0)  # invisible cursor
+    win.border(0)
     win.nodelay(True)  # make getch non-blocking
 
     char_map = {
@@ -190,5 +191,5 @@ def play_game_helper(game, win):
             game.tick(new_direction=key_map.get(key))
 
 
-game = SnakeGame(10, 10)
+game = SnakeGame(32, 18)
 play_game(game)
