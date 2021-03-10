@@ -1,11 +1,13 @@
 import atexit
 import collections
 import curses
+import enum
 import itertools
 import numpy
 import random
 from enum import Enum
 from curses import KEY_RIGHT, KEY_LEFT, KEY_UP, KEY_DOWN
+from typing import NamedTuple, Tuple
 
 # Game adapted from https://gist.github.com/sanchitgangwar/2158089
 
@@ -16,6 +18,22 @@ class SnakeGame:
     HEAD = 0.5
     BODY = 0.25
     FRUIT = 1
+
+    class SnakePartType(Enum):
+        HEAD_UP = enum.auto()
+        HEAD_RIGHT = enum.auto()
+        HEAD_LEFT = enum.auto()
+        HEAD_DOWN = enum.auto()
+        BODY_LEFT_RIGHT = enum.auto()
+        BODY_DOWN_UP = enum.auto()
+        BODY_LEFT_DOWN = enum.auto()
+        BODY_LEFT_UP = enum.auto()
+        BODY_RIGHT_DOWN = enum.auto()
+        BODY_RIGHT_UP = enum.auto()
+
+    class SnakePart(NamedTuple):
+        pos: Tuple[int, int]
+        part: "SnakeGame.SnakePartType"
 
     class Move(Enum):
         UP = (-1, 0)
@@ -42,10 +60,17 @@ class SnakeGame:
         # snake initial position
         center_row = self.height // 2
         center_col = self.width // 2
-        for j, part in zip([-1, 0, 1], [self.BODY, self.BODY, self.HEAD]):
+        initial_snake_parts = [
+            SnakeGame.SnakePartType.BODY_LEFT_RIGHT,
+            SnakeGame.SnakePartType.BODY_LEFT_RIGHT,
+            SnakeGame.SnakePartType.HEAD_RIGHT,
+        ]
+        for j, part in zip([-1, 0, 1], initial_snake_parts):
             pos = (center_row, center_col + j)
-            self.snake.appendleft(pos)
-            self.board[pos] = part
+            self.snake.appendleft(SnakeGame.SnakePart(pos, part))
+            self.board[pos] = (
+                self.HEAD if part == SnakeGame.SnakePartType.HEAD_RIGHT else self.BODY
+            )
 
         self.spawn_fruit()
 
@@ -60,42 +85,76 @@ class SnakeGame:
         if self.on_new_fruit is not None:
             self.on_new_fruit(pos)
 
-    def move_snake(self):
-        old_head = self.snake[0]
-        new_head = (
-            (old_head[0] + self.snake_direction[0]) % self.height,
-            (old_head[1] + self.snake_direction[1]) % self.width,
+    def tick(self, new_direction):
+        self.just_ate_fruit = False
+        prev_direction = self.snake_direction
+        if new_direction is not None:
+            self.snake_direction = new_direction.value
+
+        old_head = self.snake.popleft()
+        new_head_pos = (
+            (old_head.pos[0] + self.snake_direction[0]) % self.height,
+            (old_head.pos[1] + self.snake_direction[1]) % self.width,
         )
 
+        old_head_new_part = self.get_part_type(self.snake_direction, prev_direction)
+        old_head = SnakeGame.SnakePart(old_head.pos, old_head_new_part)
+        new_head = SnakeGame.SnakePart(
+            new_head_pos, self.get_head_type(self.snake_direction)
+        )
+
+        self.snake.appendleft(old_head)
         self.snake.appendleft(new_head)
 
-        if self.board[new_head] == SnakeGame.BODY:
+        if self.board[new_head_pos] == SnakeGame.BODY:
             # checking body hit is sufficient, head cannot hit itself
             self.game_over = True
             return
-        elif self.board[new_head] == SnakeGame.FRUIT:
+        elif self.board[new_head_pos] == SnakeGame.FRUIT:
             self.score += 1
             self.just_ate_fruit = True
-            self.fruits.remove(new_head)
+            self.fruits.remove(new_head_pos)
             self.spawn_fruit()
             old_tail = None
         else:
             # no game over, no fruit hit. snake tail moves
             old_tail = self.snake.pop()
-            self.board[old_tail] = SnakeGame.BLANK
+            self.board[old_tail.pos] = SnakeGame.BLANK
 
         # move head
-        self.board[old_head] = SnakeGame.BODY
-        self.board[new_head] = SnakeGame.HEAD
+        self.board[old_head.pos] = SnakeGame.BODY
+        self.board[new_head_pos] = SnakeGame.HEAD
 
         if self.on_snake_move is not None:
             self.on_snake_move(new_head, old_head, old_tail)
 
-    def tick(self, new_direction):
-        self.just_ate_fruit = False
-        if new_direction is not None:
-            self.snake_direction = new_direction.value
-        self.move_snake()
+    @classmethod
+    def get_head_type(cls, direction):
+        if direction == SnakeGame.Move.UP.value:
+            return SnakeGame.SnakePartType.HEAD_UP
+        elif direction == SnakeGame.Move.RIGHT.value:
+            return SnakeGame.SnakePartType.HEAD_RIGHT
+        elif direction == SnakeGame.Move.DOWN.value:
+            return SnakeGame.SnakePartType.HEAD_DOWN
+        else:
+            return SnakeGame.SnakePartType.HEAD_LEFT
+
+    @classmethod
+    def get_part_type(cls, ahead_diff, behind_diff):
+        if ahead_diff == behind_diff:
+            if ahead_diff[0] == 0:
+                return cls.SnakePartType.BODY_LEFT_RIGHT
+            return cls.SnakePartType.BODY_DOWN_UP
+
+        diff_change = (ahead_diff[0] - behind_diff[0], ahead_diff[1] - behind_diff[1])
+        if diff_change == (1, 1):
+            return cls.SnakePartType.BODY_RIGHT_DOWN
+        elif diff_change == (1, -1):
+            return cls.SnakePartType.BODY_LEFT_DOWN
+        elif diff_change == (-1, 1):
+            return cls.SnakePartType.BODY_RIGHT_UP
+        elif diff_change == (-1, -1):
+            return cls.SnakePartType.BODY_LEFT_UP
 
 
 def play_game(game):
@@ -128,29 +187,42 @@ def play_game_helper(game, win):
         SnakeGame.BODY: "+",
         SnakeGame.FRUIT: "#",
         SnakeGame.BLANK: " ",
+        SnakeGame.SnakePartType.HEAD_UP: "∧",
+        SnakeGame.SnakePartType.HEAD_LEFT: "<",
+        SnakeGame.SnakePartType.HEAD_RIGHT: ">",
+        SnakeGame.SnakePartType.HEAD_DOWN: "∨",
+        SnakeGame.SnakePartType.BODY_LEFT_RIGHT: "═",
+        SnakeGame.SnakePartType.BODY_DOWN_UP: "║",
+        SnakeGame.SnakePartType.BODY_LEFT_DOWN: "╗",
+        SnakeGame.SnakePartType.BODY_LEFT_UP: "╝",
+        SnakeGame.SnakePartType.BODY_RIGHT_DOWN: "╔",
+        SnakeGame.SnakePartType.BODY_RIGHT_UP: "╚",
     }
 
     def draw_char(pos, c):
         # shift indices since border takes up the first row and column
         win.addch(pos[0] + 1, pos[1] + 1, char_map[c])
 
+    def draw_part(part):
+        draw_char(part.pos, part.part)
+
     def on_new_fruit(fruit):
         draw_char(fruit, SnakeGame.FRUIT)
 
     def on_snake_move(new_head, old_head, old_tail):
-        draw_char(new_head, SnakeGame.HEAD)
-        draw_char(old_head, SnakeGame.BODY)
+        draw_part(new_head)
+        draw_part(old_head)
         if old_tail is not None:
-            draw_char(old_tail, SnakeGame.BLANK)
+            draw_char(old_tail.pos, SnakeGame.BLANK)
 
     # register event handlers
     game.on_new_fruit = on_new_fruit
     game.on_snake_move = on_snake_move
 
     # initial board
-    draw_char(game.snake[0], SnakeGame.HEAD)
+    draw_part(game.snake[0])
     for body in itertools.islice(game.snake, 1, None):
-        draw_char(body, SnakeGame.BODY)
+        draw_part(body)
     for fruit in game.fruits:
         draw_char(fruit, SnakeGame.FRUIT)
 
@@ -191,5 +263,5 @@ def play_game_helper(game, win):
             game.tick(new_direction=key_map.get(key))
 
 
-game = SnakeGame(32, 18)
+game = SnakeGame(10, 10)
 play_game(game)
