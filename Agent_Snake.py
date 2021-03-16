@@ -23,18 +23,17 @@ def aggregate_memories(memories):
     batch_memory = Memory()
     for memory in memories:
         for step in zip(memory.observations, memory.actions, memory.rewards):
-        batch_memory.add_to_memory(*step)
+            batch_memory.add_to_memory(*step)
     return batch_memory
 
-# Instantiate a single Memory buffer  
-memory = Memory()
+
 
 ### Reward function ###
 
 # Helper function that normalizes an np.array x
 def normalize(x):
-    x -= np.mean(x)
-    x /= np.std(x)
+    x = x - np.mean(x)
+    x = x /  np.std(x)
     return x.astype(np.float32)
 
 # Compute normalized, discounted, cumulative rewards (i.e., return)
@@ -66,17 +65,44 @@ def compute_loss(logits, actions, rewards):
     loss = tf.reduce_mean(neg_logprob * rewards)
     return loss
 
-### train function ###
-# Arguments:
-#   model: network model
-#   optimizer: tf optimizer
-#   observations: inputs from the game state
-#   actions: the actions the agent took in an episode
-#   rewards: the rewards the agent received in an episode
+
+### Training step (forward and backpropagation) ###
+
 def train_step(model, optimizer, observations, actions, discounted_rewards):
     with tf.GradientTape() as tape:
+        # Forward propagate through the agent network
         logits = model(observations)
         loss = compute_loss(logits, actions, discounted_rewards)
 
     grads = tape.gradient(loss, model.trainable_variables)
     optimizer.apply_gradients(zip(grads, model.trainable_variables))
+
+### Cartpole training! ###
+
+
+
+# Learning rate and optimizer
+learning_rate = 1e-3
+optimizer = tf.keras.optimizers.Adam(learning_rate)
+
+
+def create_snake_model(width, height, activation_func):
+    model = tf.keras.models.Sequential([
+        tf.keras.layers.Flatten(),
+        tf.keras.layers.Dense(10, activation = 'relu'),
+        tf.keras.layers.Dense(30, activation = 'relu'),
+        tf.keras.layers.Dense(4, activation = activation_func)
+    ])
+    return model
+
+
+def choose_action(model, observation, single = True):
+    observation = np.expand_dims(observation, axis =0) if single else observation
+    logits = model(observation)
+    action = tf.random.categorical(logits, num_samples=1)
+    action = action.numpy().flatten()
+    return action[0] if single else action
+
+
+
+

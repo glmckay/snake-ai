@@ -185,7 +185,7 @@ def play_game(game, model=None):
     win = curses.newwin(game.height + 2, game.width + 2, 0, 0)
 
     try:
-        play_game_helper(game, win)
+        play_game_helper(game, win, model)
     finally:
         cleanup()
         atexit.unregister(cleanup)
@@ -251,15 +251,15 @@ def play_game_helper(game, win, model=None):
             SnakeGame.Move.RIGHT,
         ]
         game.tick(game_actions[choose_action(model, game.board)])
-        time.sleep(0.5)
+        event = win.getch()
     else:
         KEY_ESC = 27
         KEY_SPACE = ord(" ")
         key_map = {
-            KEY_LEFT: SnakeGame.Move.LEFT,
-            KEY_RIGHT: SnakeGame.Move.RIGHT,
-            KEY_UP: SnakeGame.Move.UP,
-            KEY_DOWN: SnakeGame.Move.DOWN,
+            ord("a"): SnakeGame.Move.LEFT,
+            ord("d"): SnakeGame.Move.RIGHT,
+            ord("w"): SnakeGame.Move.UP,
+            ord("s"): SnakeGame.Move.DOWN,
         }
         is_paused = False
         key = None
