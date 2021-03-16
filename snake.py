@@ -41,15 +41,22 @@ class SnakeGame:
         DOWN = (1, 0)
         LEFT = (0, -1)
 
-    def __init__(self, width, height):
+        def __add__(self, other):
+            return (self.value[0] + other.value[0], self.value[1] + other.value[1])
+
+        def __sub__(self, other):
+            return (self.value[0] + other.value[0], self.value[1] + other.value[1])
+
+    def __init__(self, width, height, num_fruit=1):
 
         assert width >= 3 and height >= 3
+        assert num_fruit > 0
 
         self.width = width
         self.height = height
         self.board = numpy.zeros((self.height, self.width))
         self.snake = collections.deque()  # left end is head, right end is tail
-        self.snake_direction = SnakeGame.Move.RIGHT.value
+        self.snake_direction = SnakeGame.Move.RIGHT
         self.fruits = []
         self.score = 0
         self.just_ate_fruit = False
@@ -72,7 +79,8 @@ class SnakeGame:
                 self.HEAD if part == SnakeGame.SnakePartType.HEAD_RIGHT else self.BODY
             )
 
-        self.spawn_fruit()
+        for i in range(num_fruit):
+            self.spawn_fruit()
 
     def spawn_fruit(self):
         pos = None
@@ -89,12 +97,16 @@ class SnakeGame:
         self.just_ate_fruit = False
         prev_direction = self.snake_direction
         if new_direction is not None:
-            self.snake_direction = new_direction.value
+            if (
+                new_direction.value[0] != -prev_direction.value[0]
+                or new_direction.value[1] != -prev_direction.value[1]
+            ):
+                self.snake_direction = new_direction
 
         old_head = self.snake.popleft()
         new_head_pos = (
-            (old_head.pos[0] + self.snake_direction[0]) % self.height,
-            (old_head.pos[1] + self.snake_direction[1]) % self.width,
+            (old_head.pos[0] + self.snake_direction.value[0]) % self.height,
+            (old_head.pos[1] + self.snake_direction.value[1]) % self.width,
         )
 
         old_head_new_part = self.get_part_type(self.snake_direction, prev_direction)
@@ -130,17 +142,19 @@ class SnakeGame:
 
     @classmethod
     def get_head_type(cls, direction):
-        if direction == SnakeGame.Move.UP.value:
+        if direction == SnakeGame.Move.UP:
             return SnakeGame.SnakePartType.HEAD_UP
-        elif direction == SnakeGame.Move.RIGHT.value:
+        elif direction == SnakeGame.Move.RIGHT:
             return SnakeGame.SnakePartType.HEAD_RIGHT
-        elif direction == SnakeGame.Move.DOWN.value:
+        elif direction == SnakeGame.Move.DOWN:
             return SnakeGame.SnakePartType.HEAD_DOWN
         else:
             return SnakeGame.SnakePartType.HEAD_LEFT
 
     @classmethod
-    def get_part_type(cls, ahead_diff, behind_diff):
+    def get_part_type(cls, head_direction, old_head_direction):
+        ahead_diff = head_direction.value
+        behind_diff = old_head_direction.value
         if ahead_diff == behind_diff:
             if ahead_diff[0] == 0:
                 return cls.SnakePartType.BODY_LEFT_RIGHT
@@ -234,6 +248,7 @@ def play_game_helper(game, win):
         KEY_UP: SnakeGame.Move.UP,
         KEY_DOWN: SnakeGame.Move.DOWN,
     }
+    is_paused = False
     key = None
     while key != KEY_ESC:
         win.border(0)
@@ -241,16 +256,15 @@ def play_game_helper(game, win):
         win.addstr(0, 2, f"Score : {game.score} ")
         if game.game_over:
             win.addstr(game.height + 1, 2, "Game over")
+        elif is_paused:
+            win.addstr(game.height + 1, 2, "Paused")
 
         event = win.getch()
         key = None if event == -1 else event
 
         # pause if space bar is pressed
         if key == KEY_SPACE:
-            key = None
-            while key != KEY_SPACE:
-                key = win.getch()
-            key = None
+            is_paused = not is_paused
             continue
 
         if key == KEY_ESC:
@@ -259,9 +273,10 @@ def play_game_helper(game, win):
         if key not in key_map:
             key = None
 
-        if not game.game_over:
+        if not game.game_over and not is_paused:
             game.tick(new_direction=key_map.get(key))
 
 
-game = SnakeGame(10, 10)
-play_game(game)
+if __name__ == "__main__":
+    game = SnakeGame(20, 13)
+    play_game(game)
