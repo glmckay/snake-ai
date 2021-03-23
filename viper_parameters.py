@@ -1,17 +1,20 @@
 from Agent_Snake import choose_action, Memory, train_step, discount_rewards, create_snake_model
 import numpy
 from snake import SnakeGame, play_game
+
+import os
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 import tensorflow as tf
 
 width = 10
 height = 10
 
-learning_rate = 1
-gamma = 0.95
+learning_rate = 1e-3
+gamma = 0.99
 batch_size = 69
 activation_func = tf.keras.activations.softmax
 optimizer = tf.keras.optimizers.Adam(learning_rate)
-episodes = 100
+episodes = 10000
 
 # Initialize things
 memory = Memory()
@@ -24,36 +27,50 @@ game_actions = [SnakeGame.Move.UP,SnakeGame.Move.DOWN,SnakeGame.Move.LEFT,SnakeG
 
 #### Do we parallelize later??
 
-for i in range(episodes):
-    game = SnakeGame(width,height)
-    while not game.game_over:       
-        observation = numpy.copy(game.board)
-        action = choose_action(snake_model,observation)
-        game.tick(game_actions[action])
-        ## next_observation = numpy.copy(game.board)
-        if game.game_over:
-            reward = -1
-        elif game.just_ate_fruit:
-            reward = 1
-        else:
-            reward = 0
+def train(num_episodes):
+    max_moves = 101
 
-        memory.add_to_memory(observation, action, reward)
+    for i in range(num_episodes):
+        game = SnakeGame(width, height, num_fruit=3)
+        num_moves = 0
+        while not game.game_over:
+            observation = numpy.copy(game.board)
+            action = choose_action(snake_model, observation)
+            game.tick(game_actions[action])
+            ## next_observation = numpy.copy(game.board)
+            if game.game_over:
+                reward = -10
+            elif game.just_ate_fruit:
+                reward = 1
+            else:
+                reward = 0
 
-        if game.game_over:
-            #### total_reward  = sum(memory.rewards)
-            total_observation = numpy.stack(memory.observations)
-            total_action = numpy.array(memory.actions)
-            total_rewards = discount_rewards(memory.rewards, gamma)
-            train_step(snake_model, optimizer, total_observation, total_action, total_rewards)
+            memory.add_to_memory(observation, action, reward)
 
-            memory.clear()
-            break
+            if game.game_over:
+                #### total_reward  = sum(memory.rewards)
+                total_observation = numpy.stack(memory.observations, 0)
+                total_action = numpy.array(memory.actions)
+                total_rewards = discount_rewards(memory.rewards, gamma)
+                train_step(snake_model, optimizer, total_observation, total_action, total_rewards)
 
-game = SnakeGame(width, height)
-play_game(game,snake_model)
-     
+                memory.clear()
+                break
+
+            num_moves += 1
+            if num_moves > max_moves:
+                break
+
+
+for i in range(4):
+    train(2500)
+    print(i)
+
+
+game = SnakeGame(width, height, num_fruit=3)
+play_game(game, snake_model)
 
 
 
-    
+
+

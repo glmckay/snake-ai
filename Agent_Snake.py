@@ -1,18 +1,20 @@
+import os
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 import tensorflow as tf
 import numpy as np
 
 class Memory:
-    def __init__(self): 
+    def __init__(self):
         self.clear()
 
     # Resets/restarts the memory buffer
-    def clear(self): 
+    def clear(self):
         self.observations = []
         self.actions = []
         self.rewards = []
 
     # Add observations, actions, rewards to memory
-    def add_to_memory(self, new_observation, new_action, new_reward): 
+    def add_to_memory(self, new_observation, new_action, new_reward):
         self.observations.append(new_observation)
         self.actions.append(new_action)
         self.rewards.append(new_reward)
@@ -33,7 +35,7 @@ def aggregate_memories(memories):
 # Helper function that normalizes an np.array x
 def normalize(x):
     x = x - np.mean(x)
-    x = x /  np.std(x)
+    x = x / np.std(x) if len(x) > 1 else x
     return x.astype(np.float32)
 
 # Compute normalized, discounted, cumulative rewards (i.e., return)
@@ -42,13 +44,13 @@ def normalize(x):
 #   gamma: discounting factor
 # Returns:
 #   normalized discounted reward
-def discount_rewards(rewards, gamma=0.95): 
+def discount_rewards(rewards, gamma=0.95):
     discounted_rewards = np.zeros_like(rewards)
     R = 0
     for t in reversed(range(0, len(rewards))):
         # update the total discounted reward
         R = R * gamma + rewards[t]
-        discounted_rewards[t] = R        
+        discounted_rewards[t] = R
     return normalize(discounted_rewards)
 
 
@@ -60,7 +62,7 @@ def discount_rewards(rewards, gamma=0.95):
 #   rewards: the rewards the agent received in an episode
 # Returns:
 #   loss
-def compute_loss(logits, actions, rewards): 
+def compute_loss(logits, actions, rewards):
     neg_logprob = tf.nn.sparse_softmax_cross_entropy_with_logits(logits= logits, labels= actions)
     loss = tf.reduce_mean(neg_logprob * rewards)
     return loss
@@ -80,17 +82,12 @@ def train_step(model, optimizer, observations, actions, discounted_rewards):
 ### Cartpole training! ###
 
 
-
-# Learning rate and optimizer
-learning_rate = 1e-3
-optimizer = tf.keras.optimizers.Adam(learning_rate)
-
-
 def create_snake_model(width, height, activation_func):
     model = tf.keras.models.Sequential([
         tf.keras.layers.Flatten(),
-        tf.keras.layers.Dense(10, activation = 'relu'),
-        tf.keras.layers.Dense(30, activation = 'relu'),
+        tf.keras.layers.Dense(width*height*10, activation = 'relu'),
+        # tf.keras.layers.Dense(width*height*10, activation = 'sigmoid'),
+        # tf.keras.layers.Dense(width*height*5, activation = 'sigmoid'),
         tf.keras.layers.Dense(4, activation = activation_func)
     ])
     return model
@@ -99,7 +96,7 @@ def create_snake_model(width, height, activation_func):
 def choose_action(model, observation, single = True):
     observation = np.expand_dims(observation, axis =0) if single else observation
     logits = model(observation)
-    action = tf.random.categorical(logits, num_samples=1)
+    action = tf.random.categorical(np.log(logits), num_samples=1)
     action = action.numpy().flatten()
     return action[0] if single else action
 

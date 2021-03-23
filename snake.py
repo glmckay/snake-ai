@@ -97,20 +97,29 @@ class SnakeGame:
             self.on_new_fruit(pos)
 
     def tick(self, new_direction):
+        if self.game_over:
+            return
+
         self.just_ate_fruit = False
         prev_direction = self.snake_direction
         if new_direction is not None:
-            if (
-                new_direction.value[0] != -prev_direction.value[0]
-                or new_direction.value[1] != -prev_direction.value[1]
-            ):
-                self.snake_direction = new_direction
+            # if (
+            #     new_direction.value[0] != -prev_direction.value[0]
+            #     or new_direction.value[1] != -prev_direction.value[1]
+            # ):
+            self.snake_direction = new_direction
 
         old_head = self.snake.popleft()
         new_head_pos = (
-            (old_head.pos[0] + self.snake_direction.value[0]) % self.height,
-            (old_head.pos[1] + self.snake_direction.value[1]) % self.width,
+            (old_head.pos[0] + self.snake_direction.value[0]),  # % self.height,
+            (old_head.pos[1] + self.snake_direction.value[1]),  # % self.width,
         )
+
+        if not (
+            0 <= new_head_pos[0] < self.height and 0 <= new_head_pos[1] < self.width
+        ):
+            self.game_over = True
+            return
 
         old_head_new_part = self.get_part_type(self.snake_direction, prev_direction)
         old_head = SnakeGame.SnakePart(old_head.pos, old_head_new_part)
@@ -130,7 +139,9 @@ class SnakeGame:
             self.just_ate_fruit = True
             self.fruits.remove(new_head_pos)
             self.spawn_fruit()
-            old_tail = None
+            # old_tail = None
+            old_tail = self.snake.pop()
+            self.board[old_tail.pos] = SnakeGame.BLANK
         else:
             # no game over, no fruit hit. snake tail moves
             old_tail = self.snake.pop()
@@ -243,23 +254,13 @@ def play_game_helper(game, win, model=None):
     for fruit in game.fruits:
         draw_char(fruit, SnakeGame.FRUIT)
 
-    if model and not game.game_over:
-        game_actions = [
-            SnakeGame.Move.UP,
-            SnakeGame.Move.DOWN,
-            SnakeGame.Move.LEFT,
-            SnakeGame.Move.RIGHT,
-        ]
-        game.tick(game_actions[choose_action(model, game.board)])
-        event = win.getch()
-    else:
         KEY_ESC = 27
         KEY_SPACE = ord(" ")
         key_map = {
-            ord("a"): SnakeGame.Move.LEFT,
-            ord("d"): SnakeGame.Move.RIGHT,
-            ord("w"): SnakeGame.Move.UP,
-            ord("s"): SnakeGame.Move.DOWN,
+            KEY_LEFT: SnakeGame.Move.LEFT,
+            KEY_RIGHT: SnakeGame.Move.RIGHT,
+            KEY_UP: SnakeGame.Move.UP,
+            KEY_DOWN: SnakeGame.Move.DOWN,
         }
         is_paused = False
         key = None
@@ -272,22 +273,32 @@ def play_game_helper(game, win, model=None):
             elif is_paused:
                 win.addstr(game.height + 1, 2, "Paused")
 
-            event = win.getch()
-            key = None if event == -1 else event
+            if model and not game.game_over:
+                game_actions = [
+                    SnakeGame.Move.UP,
+                    SnakeGame.Move.DOWN,
+                    SnakeGame.Move.LEFT,
+                    SnakeGame.Move.RIGHT,
+                ]
+                game.tick(game_actions[choose_action(model, game.board)])
+                event = win.getch()
+            else:
+                event = win.getch()
+                key = None if event == -1 else event
 
-            # pause if space bar is pressed
-            if key == KEY_SPACE:
-                is_paused = not is_paused
-                continue
+                # pause if space bar is pressed
+                if key == KEY_SPACE:
+                    is_paused = not is_paused
+                    continue
 
-            if key == KEY_ESC:
-                break
+                if key == KEY_ESC:
+                    break
 
-            if key not in key_map:
-                key = None
+                if key not in key_map:
+                    key = None
 
-            if not game.game_over and not is_paused:
-                game.tick(new_direction=key_map.get(key))
+                if not game.game_over and not is_paused:
+                    game.tick(new_direction=key_map.get(key))
 
 
 if __name__ == "__main__":
