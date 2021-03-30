@@ -254,53 +254,53 @@ def play_game_helper(game, win, model=None):
     for fruit in game.fruits:
         draw_char(fruit, SnakeGame.FRUIT)
 
-        KEY_ESC = 27
-        KEY_SPACE = ord(" ")
-        key_map = {
-            KEY_LEFT: SnakeGame.Move.LEFT,
-            KEY_RIGHT: SnakeGame.Move.RIGHT,
-            KEY_UP: SnakeGame.Move.UP,
-            KEY_DOWN: SnakeGame.Move.DOWN,
-        }
-        is_paused = False
-        key = None
-        while key != KEY_ESC:
-            win.border(0)
-            win.timeout(100)
-            win.addstr(0, 2, f"Score : {game.score} ")
-            if game.game_over:
-                win.addstr(game.height + 1, 2, "Game over")
-            elif is_paused:
-                win.addstr(game.height + 1, 2, "Paused")
+    KEY_ESC = 27
+    KEY_SPACE = ord(" ")
+    key_map = {
+        KEY_LEFT: SnakeGame.Move.LEFT,
+        KEY_RIGHT: SnakeGame.Move.RIGHT,
+        KEY_UP: SnakeGame.Move.UP,
+        KEY_DOWN: SnakeGame.Move.DOWN,
+    }
+    is_paused = False
+    key = None
+    while key != KEY_ESC:
+        win.border(0)
+        win.timeout(100)
+        win.addstr(0, 2, f"Score : {game.score} ")
+        if game.game_over:
+            win.addstr(game.height + 1, 2, "Game over")
+        elif is_paused:
+            win.addstr(game.height + 1, 2, "Paused")
 
-            if model and not game.game_over:
-                game_actions = [
-                    SnakeGame.Move.UP,
-                    SnakeGame.Move.DOWN,
-                    SnakeGame.Move.LEFT,
-                    SnakeGame.Move.RIGHT,
-                ]
-                game.tick(game_actions[choose_action(model, game.board)])
-                event = win.getch()
-            else:
-                event = win.getch()
-                key = None if event == -1 else event
+        if model and not game.game_over:
+            game_actions = [
+                SnakeGame.Move.UP,
+                SnakeGame.Move.DOWN,
+                SnakeGame.Move.LEFT,
+                SnakeGame.Move.RIGHT,
+            ]
+            game.tick(game_actions[choose_action(model, game.board)])
+            event = win.getch()
+        else:
+            event = win.getch()
+            key = None if event == -1 else event
 
-                # pause if space bar is pressed
-                if key == KEY_SPACE:
-                    is_paused = not is_paused
-                    continue
+            # pause if space bar is pressed
+            if key == KEY_SPACE:
+                is_paused = not is_paused
+                continue
 
-                if key == KEY_ESC:
-                    break
+            if key == KEY_ESC:
+                break
 
-                if key not in key_map:
-                    key = None
+            if key not in key_map:
+                key = None
 
-                if not game.game_over and not is_paused:
-                    game.tick(new_direction=key_map.get(key))
+            if not game.game_over and not is_paused:
+                game.tick(new_direction=key_map.get(key))
 
 
 if __name__ == "__main__":
-    game = SnakeGame(20, 13)
+    game = SnakeGame(20, 13, 3)
     play_game(game)
