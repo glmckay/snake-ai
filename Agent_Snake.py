@@ -35,7 +35,8 @@ def aggregate_memories(memories):
 # Helper function that normalizes an np.array x
 def normalize(x):
     x = x - np.mean(x)
-    x = x / np.std(x) if len(x) > 1 else x
+    std = np.std(x)
+    x = x / std if std != 0 else x
     return x.astype(np.float32)
 
 # Compute normalized, discounted, cumulative rewards (i.e., return)
@@ -44,13 +45,16 @@ def normalize(x):
 #   gamma: discounting factor
 # Returns:
 #   normalized discounted reward
-def discount_rewards(rewards, gamma=0.95):
+def discount_rewards(rewards, game_over_reward, gamma=0.95):
     discounted_rewards = np.zeros_like(rewards)
     R = 0
     for t in reversed(range(0, len(rewards))):
         # update the total discounted reward
         R = R * gamma + rewards[t]
         discounted_rewards[t] = R
+
+        if rewards[t] == game_over_reward:
+            R = 0
     return normalize(discounted_rewards)
 
 
@@ -96,7 +100,8 @@ def create_snake_model(width, height, activation_func):
 def choose_action(model, observation, single = True):
     observation = np.expand_dims(observation, axis =0) if single else observation
     logits = model(observation)
-    action = tf.random.categorical(np.log(logits), num_samples=1)
+    action = tf.random.categorical(logits, num_samples=1)
+    # action = tf.random.categorical(np.log(logits), num_samples=1)
     action = action.numpy().flatten()
     return action[0] if single else action
 

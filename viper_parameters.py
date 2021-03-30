@@ -12,7 +12,7 @@ height = 10
 learning_rate = 1e-3
 gamma = 0.99
 batch_size = 69
-activation_func = tf.keras.activations.softmax
+activation_func = None  # tf.keras.activations.softmax
 optimizer = tf.keras.optimizers.Adam(learning_rate)
 episodes = 10000
 
@@ -28,20 +28,26 @@ game_actions = [SnakeGame.Move.UP,SnakeGame.Move.DOWN,SnakeGame.Move.LEFT,SnakeG
 #### Do we parallelize later??
 
 def train(num_episodes):
-    max_moves = 101
+    max_moves_without_fruit = 15
 
     for i in range(num_episodes):
         game = SnakeGame(width, height, num_fruit=3)
-        num_moves = 0
+        num_moves_without_fruit = 0
         while not game.game_over:
             observation = numpy.copy(game.board)
             action = choose_action(snake_model, observation)
             game.tick(game_actions[action])
             ## next_observation = numpy.copy(game.board)
+
+            num_moves_without_fruit += 1
+
             if game.game_over:
                 reward = -10
             elif game.just_ate_fruit:
                 reward = 1
+            elif num_moves_without_fruit > max_moves_without_fruit:
+                reward = -1
+                num_moves_without_fruit = 0
             else:
                 reward = 0
 
@@ -57,13 +63,10 @@ def train(num_episodes):
                 memory.clear()
                 break
 
-            num_moves += 1
-            if num_moves > max_moves:
-                break
 
 
-for i in range(4):
-    train(2500)
+for i in range(16):
+    train(1250)
     print(i)
 
 
