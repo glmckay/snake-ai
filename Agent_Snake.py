@@ -49,12 +49,13 @@ def discount_rewards(rewards, game_over_reward, gamma=0.95):
     discounted_rewards = np.zeros_like(rewards)
     R = 0
     for t in reversed(range(0, len(rewards))):
+        if rewards[t] == game_over_reward:
+            # reset before contributing to sum because we are iterating in reverse
+            R = 0
         # update the total discounted reward
         R = R * gamma + rewards[t]
         discounted_rewards[t] = R
 
-        if rewards[t] == game_over_reward:
-            R = 0
     return normalize(discounted_rewards)
 
 
