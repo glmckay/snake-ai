@@ -45,8 +45,8 @@ def normalize(x):
 #   gamma: discounting factor
 # Returns:
 #   normalized discounted reward
-def discount_rewards(rewards, game_over_reward, gamma=0.95):
-    discounted_rewards = np.zeros_like(rewards)
+def discount_rewards(rewards, game_over_reward, gamma=0.5):
+    discounted_rewards = np.zeros_like(rewards, dtype=float)
     R = 0
     for t in reversed(range(0, len(rewards))):
         if rewards[t] == game_over_reward:

@@ -62,7 +62,7 @@ class SnakeGame:
         self.snake_direction = SnakeGame.Move.RIGHT
         self.fruits = []
         self.score = 0
-        self.just_ate_fruit = False
+        self.moves_since_last_fruit = 0
         self.game_over = False
         self.on_new_fruit = None
         self.on_snake_move = None
@@ -100,14 +100,14 @@ class SnakeGame:
         if self.game_over:
             return
 
-        self.just_ate_fruit = False
+        self.moves_since_last_fruit += 1
         prev_direction = self.snake_direction
         if new_direction is not None:
-            # if (
-            #     new_direction.value[0] != -prev_direction.value[0]
-            #     or new_direction.value[1] != -prev_direction.value[1]
-            # ):
-            self.snake_direction = new_direction
+            if (
+                new_direction.value[0] != -prev_direction.value[0]
+                or new_direction.value[1] != -prev_direction.value[1]
+            ):
+                self.snake_direction = new_direction
 
         old_head = self.snake.popleft()
         new_head_pos = (
@@ -136,7 +136,7 @@ class SnakeGame:
             return
         elif self.board[new_head_pos] == SnakeGame.FRUIT:
             self.score += 1
-            self.just_ate_fruit = True
+            self.moves_since_last_fruit = 0
             self.fruits.remove(new_head_pos)
             self.spawn_fruit()
             # old_tail = None
