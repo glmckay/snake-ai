@@ -281,7 +281,11 @@ def play_game_helper(game, win, model=None):
                 SnakeGame.Move.RIGHT,
             ]
             game.tick(game_actions[choose_action(model, game.board)])
+
             event = win.getch()
+            key = None if event == -1 else event
+            if key == KEY_ESC:
+                break
         else:
             event = win.getch()
             key = None if event == -1 else event
