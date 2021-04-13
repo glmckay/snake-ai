@@ -50,13 +50,18 @@ class SnakeGame:
         def __sub__(self, other):
             return (self.value[0] + other.value[0], self.value[1] + other.value[1])
 
-    def __init__(self, width, height, num_fruit=1):
+        def __neg__(self):
+            return (-self.value[0], -self.value[1])
+
+    def __init__(self, width, height, num_fruits=1, walls=False, grows=True):
 
         assert width >= 3 and height >= 3
-        assert num_fruit > 0
+        assert num_fruits > 0
 
         self.width = width
         self.height = height
+        self.walls = walls
+        self.grows = grows
         self.board = numpy.zeros((self.height, self.width))
         self.snake = collections.deque()  # left end is head, right end is tail
         self.snake_direction = SnakeGame.Move.RIGHT
@@ -82,7 +87,7 @@ class SnakeGame:
                 self.HEAD if part == SnakeGame.SnakePartType.HEAD_RIGHT else self.BODY
             )
 
-        for i in range(num_fruit):
+        for i in range(num_fruits):
             self.spawn_fruit()
 
     def spawn_fruit(self):
@@ -95,6 +100,25 @@ class SnakeGame:
 
         if self.on_new_fruit is not None:
             self.on_new_fruit(pos)
+
+    def get_board(self):
+        if self.walls:
+            # for now, just copy the board
+            return numpy.copy(self.board)
+
+        rotations = {
+            self.Move.RIGHT: 0,
+            self.Move.DOWN: 1,
+            self.Move.LEFT: 2,
+            self.Move.UP: 3,
+        }
+
+        center_row = self.height // 2
+        center_col = self.width // 2
+
+        head = self.snake[0].pos
+        shift = (center_row - head[0], center_col - head[1])
+        return numpy.rot90(numpy.roll(self.board, shift), rotations[self.snake_direction])
 
     def tick(self, new_direction):
         if self.game_over:
@@ -110,16 +134,18 @@ class SnakeGame:
                 self.snake_direction = new_direction
 
         old_head = self.snake.popleft()
-        new_head_pos = (
-            (old_head.pos[0] + self.snake_direction.value[0]),  # % self.height,
-            (old_head.pos[1] + self.snake_direction.value[1]),  # % self.width,
-        )
 
-        if not (
-            0 <= new_head_pos[0] < self.height and 0 <= new_head_pos[1] < self.width
-        ):
+        new_head_row = old_head.pos[0] + self.snake_direction.value[0]
+        new_head_col = old_head.pos[1] + self.snake_direction.value[1]
+
+        if not self.walls:
+            new_head_row %= self.height
+            new_head_col %= self.width
+        elif not (0 <= new_head_row < self.height and 0 <= new_head_col < self.width):
             self.game_over = True
             return
+
+        new_head_pos = (new_head_row, new_head_col)
 
         old_head_new_part = self.get_part_type(self.snake_direction, prev_direction)
         old_head = SnakeGame.SnakePart(old_head.pos, old_head_new_part)
@@ -139,9 +165,10 @@ class SnakeGame:
             self.moves_since_last_fruit = 0
             self.fruits.remove(new_head_pos)
             self.spawn_fruit()
-            # old_tail = None
-            old_tail = self.snake.pop()
-            self.board[old_tail.pos] = SnakeGame.BLANK
+            old_tail = None
+            if not self.grows:
+                old_tail = self.snake.pop()
+                self.board[old_tail.pos] = SnakeGame.BLANK
         else:
             # no game over, no fruit hit. snake tail moves
             old_tail = self.snake.pop()
@@ -280,7 +307,7 @@ def play_game_helper(game, win, model=None):
                 SnakeGame.Move.LEFT,
                 SnakeGame.Move.RIGHT,
             ]
-            game.tick(game_actions[choose_action(model, game.board)])
+            game.tick(game_actions[choose_action(model, game.get_board())])
 
             event = win.getch()
             key = None if event == -1 else event

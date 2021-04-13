@@ -14,8 +14,13 @@ import os
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 import tensorflow as tf
 
-width = 10
-height = 10
+opts = {
+    "width": 10,
+    "height": 10,
+    "num_fruits": 1,
+    "walls": False,
+    "grows": True,
+}
 
 learning_rate = 1e-3
 gamma = 0.99
@@ -26,7 +31,7 @@ NUM_FRUITS = 1
 
 # Initialize things
 memory = Memory()
-snake_model = create_snake_model(width, height, activation_func)
+snake_model = create_snake_model(opts["width"], opts["height"], activation_func)
 
 
 ####### clear memory at some point
@@ -52,18 +57,17 @@ def reward(game):
         return 0
 
 
-def train(num_episodes, episode_length):
+def train(num_episodes, episode_length, gamma=0.7):
 
     for episode_no in range(num_episodes):
 
         print(f"\rEpisode {episode_no} out of {num_episodes}", end="\r")
 
-        games = [SnakeGame(width, height, num_fruit=NUM_FRUITS) for i in range(batch_size)]
+        games = [SnakeGame(**opts) for i in range(batch_size)]
         memories = [Memory() for i in range(batch_size)]
-        memories_for_training = []
 
         for _ in range(episode_length):
-            observations = numpy.array([numpy.copy(game.board) for game in games])
+            observations = numpy.array([game.get_board() for game in games])
             actions = choose_action(snake_model, observations, single=False)
             for game, action in zip(games, actions):
                 game.tick(game_actions[action])
@@ -75,10 +79,7 @@ def train(num_episodes, episode_length):
 
             for i in range(batch_size):
                 if games[i].game_over:
-                    # memories_for_training.append(memories[i])
-                    # memories[i] = Memory()
-
-                    games[i] = SnakeGame(width, height, num_fruit=NUM_FRUITS)
+                    games[i] = SnakeGame(**opts)
 
         batch_memory = aggregate_memories(memories)
 
@@ -91,7 +92,7 @@ def train(num_episodes, episode_length):
         )
 
 
-train(700, 116)
+train(100, 116, 0.7)
 
-game = SnakeGame(width, height, num_fruit=NUM_FRUITS)
+game = SnakeGame(**opts)
 play_game(game, snake_model)
