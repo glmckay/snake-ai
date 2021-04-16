@@ -251,7 +251,6 @@ class SnakeTerminalWithModel(SnakeTerminal):
         self.model_win.erase()
         # line to separate from game area
         self.model_win.addstr(0, 0, "─" * self.model_win.getmaxyx()[1])
-        self.model_win.addstr(1,0,f"{self.seconds_per_move}")
 
         board = self.game.get_board()
         logits = self.model(numpy.expand_dims(board, axis=0))[0]
