@@ -7,12 +7,13 @@ from Agent_Snake import (
     create_snake_model,
 )
 import numpy
-from snake import SnakeGame, play_game
+from snake import SnakeGame
+from snake_terminal import play_game
 
 import os
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
-import tensorflow as tf
+import tensorflow as tf  # noqa: E402
 
 opts = {
     "width": 10,
@@ -88,7 +89,7 @@ def train(num_episodes, episode_length, gamma=0.7):
             optimizer,
             observations=numpy.stack(batch_memory.observations, 0),
             actions=numpy.array(batch_memory.actions),
-            discounted_rewards=discount_rewards(batch_memory.rewards, GAME_OVER_REWARD),
+            discounted_rewards=discount_rewards(batch_memory.rewards, GAME_OVER_REWARD, gamma),
         )
 
 

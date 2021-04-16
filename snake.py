@@ -1,16 +1,9 @@
-import atexit
 import collections
-import curses
 import enum
-import itertools
 import numpy
 import random
-import time
 from enum import Enum
-from curses import KEY_RIGHT, KEY_LEFT, KEY_UP, KEY_DOWN
-from typing import NamedTuple, Tuple
-
-from Agent_Snake import choose_action
+from typing import Callable, NamedTuple, Optional, Tuple
 
 # Game adapted from https://gist.github.com/sanchitgangwar/2158089
 
@@ -22,7 +15,9 @@ class SnakeGame:
     BODY = 0.25
     FRUIT = 1
 
-    class SnakePartType(Enum):
+    class BoardElement(Enum):
+        BLANK = enum.auto()
+        FRUIT = enum.auto()
         HEAD_UP = enum.auto()
         HEAD_RIGHT = enum.auto()
         HEAD_LEFT = enum.auto()
@@ -36,7 +31,7 @@ class SnakeGame:
 
     class SnakePart(NamedTuple):
         pos: Tuple[int, int]
-        part: "SnakeGame.SnakePartType"
+        part: "SnakeGame.BoardElement"
 
     class Move(Enum):
         UP = (-1, 0)
@@ -44,16 +39,12 @@ class SnakeGame:
         DOWN = (1, 0)
         LEFT = (0, -1)
 
-        def __add__(self, other):
-            return (self.value[0] + other.value[0], self.value[1] + other.value[1])
+        def is_opposite(self, rhs):
+            return self.value[0] == -rhs.value[0] and self.value[1] == -rhs.value[1]
 
-        def __sub__(self, other):
-            return (self.value[0] + other.value[0], self.value[1] + other.value[1])
-
-        def __neg__(self):
-            return (-self.value[0], -self.value[1])
-
-    def __init__(self, width, height, num_fruits=1, walls=False, grows=True):
+    def __init__(
+        self, width, height, num_fruits=1, walls=False, grows=True, reverse_death=False
+    ):
 
         assert width >= 3 and height >= 3
         assert num_fruits > 0
@@ -62,6 +53,8 @@ class SnakeGame:
         self.height = height
         self.walls = walls
         self.grows = grows
+        self.reverse_death = reverse_death
+
         self.board = numpy.zeros((self.height, self.width))
         self.snake = collections.deque()  # left end is head, right end is tail
         self.snake_direction = SnakeGame.Move.RIGHT
@@ -69,22 +62,22 @@ class SnakeGame:
         self.score = 0
         self.moves_since_last_fruit = 0
         self.game_over = False
-        self.on_new_fruit = None
-        self.on_snake_move = None
+        self.on_new_fruit: Optional[Callable] = None
+        self.on_snake_move: Optional[Callable] = None
 
         # snake initial position
         center_row = self.height // 2
         center_col = self.width // 2
         initial_snake_parts = [
-            SnakeGame.SnakePartType.BODY_LEFT_RIGHT,
-            SnakeGame.SnakePartType.BODY_LEFT_RIGHT,
-            SnakeGame.SnakePartType.HEAD_RIGHT,
+            SnakeGame.BoardElement.BODY_LEFT_RIGHT,
+            SnakeGame.BoardElement.BODY_LEFT_RIGHT,
+            SnakeGame.BoardElement.HEAD_RIGHT,
         ]
         for j, part in zip([-1, 0, 1], initial_snake_parts):
             pos = (center_row, center_col + j)
             self.snake.appendleft(SnakeGame.SnakePart(pos, part))
             self.board[pos] = (
-                self.HEAD if part == SnakeGame.SnakePartType.HEAD_RIGHT else self.BODY
+                self.HEAD if part == SnakeGame.BoardElement.HEAD_RIGHT else self.BODY
             )
 
         for i in range(num_fruits):
@@ -118,7 +111,9 @@ class SnakeGame:
 
         head = self.snake[0].pos
         shift = (center_row - head[0], center_col - head[1])
-        return numpy.rot90(numpy.roll(self.board, shift), rotations[self.snake_direction])
+        return numpy.rot90(
+            numpy.roll(self.board, shift), rotations[self.snake_direction]
+        )
 
     def tick(self, new_direction):
         if self.game_over:
@@ -127,11 +122,11 @@ class SnakeGame:
         self.moves_since_last_fruit += 1
         prev_direction = self.snake_direction
         if new_direction is not None:
-            if (
-                new_direction.value[0] != -prev_direction.value[0]
-                or new_direction.value[1] != -prev_direction.value[1]
-            ):
+            if not self.snake_direction.is_opposite(new_direction):
                 self.snake_direction = new_direction
+            elif self.reverse_death:
+                self.game_over = True
+                return
 
         old_head = self.snake.popleft()
 
@@ -184,13 +179,13 @@ class SnakeGame:
     @classmethod
     def get_head_type(cls, direction):
         if direction == SnakeGame.Move.UP:
-            return SnakeGame.SnakePartType.HEAD_UP
+            return SnakeGame.BoardElement.HEAD_UP
         elif direction == SnakeGame.Move.RIGHT:
-            return SnakeGame.SnakePartType.HEAD_RIGHT
+            return SnakeGame.BoardElement.HEAD_RIGHT
         elif direction == SnakeGame.Move.DOWN:
-            return SnakeGame.SnakePartType.HEAD_DOWN
+            return SnakeGame.BoardElement.HEAD_DOWN
         else:
-            return SnakeGame.SnakePartType.HEAD_LEFT
+            return SnakeGame.BoardElement.HEAD_LEFT
 
     @classmethod
     def get_part_type(cls, head_direction, old_head_direction):
@@ -198,140 +193,16 @@ class SnakeGame:
         behind_diff = old_head_direction.value
         if ahead_diff == behind_diff:
             if ahead_diff[0] == 0:
-                return cls.SnakePartType.BODY_LEFT_RIGHT
-            return cls.SnakePartType.BODY_DOWN_UP
+                return cls.BoardElement.BODY_LEFT_RIGHT
+            return cls.BoardElement.BODY_DOWN_UP
 
         diff_change = (ahead_diff[0] - behind_diff[0], ahead_diff[1] - behind_diff[1])
         if diff_change == (1, 1):
-            return cls.SnakePartType.BODY_RIGHT_DOWN
+            return cls.BoardElement.BODY_RIGHT_DOWN
         elif diff_change == (1, -1):
-            return cls.SnakePartType.BODY_LEFT_DOWN
+            return cls.BoardElement.BODY_LEFT_DOWN
         elif diff_change == (-1, 1):
-            return cls.SnakePartType.BODY_RIGHT_UP
+            return cls.BoardElement.BODY_RIGHT_UP
         elif diff_change == (-1, -1):
-            return cls.SnakePartType.BODY_LEFT_UP
+            return cls.BoardElement.BODY_LEFT_UP
 
-
-def play_game(game, model=None):
-    def cleanup():
-        curses.endwin()
-
-    atexit.register(cleanup)
-
-    curses.initscr()
-    # +2 for the borders
-    win = curses.newwin(game.height + 2, game.width + 2, 0, 0)
-
-    try:
-        play_game_helper(game, win, model)
-    finally:
-        cleanup()
-        atexit.unregister(cleanup)
-
-
-def play_game_helper(game, win, model=None):
-
-    win.keypad(True)  # interpret escape sequences (in particular arrow keys)
-    curses.noecho()  # don't echo input characters
-    curses.curs_set(0)  # invisible cursor
-    win.border(0)
-    win.nodelay(True)  # make getch non-blocking
-
-    char_map = {
-        SnakeGame.HEAD: "o",
-        SnakeGame.BODY: "+",
-        SnakeGame.FRUIT: "#",
-        SnakeGame.BLANK: " ",
-        SnakeGame.SnakePartType.HEAD_UP: "∧",
-        SnakeGame.SnakePartType.HEAD_LEFT: "<",
-        SnakeGame.SnakePartType.HEAD_RIGHT: ">",
-        SnakeGame.SnakePartType.HEAD_DOWN: "∨",
-        SnakeGame.SnakePartType.BODY_LEFT_RIGHT: "═",
-        SnakeGame.SnakePartType.BODY_DOWN_UP: "║",
-        SnakeGame.SnakePartType.BODY_LEFT_DOWN: "╗",
-        SnakeGame.SnakePartType.BODY_LEFT_UP: "╝",
-        SnakeGame.SnakePartType.BODY_RIGHT_DOWN: "╔",
-        SnakeGame.SnakePartType.BODY_RIGHT_UP: "╚",
-    }
-
-    def draw_char(pos, c):
-        # shift indices since border takes up the first row and column
-        win.addch(pos[0] + 1, pos[1] + 1, char_map[c])
-
-    def draw_part(part):
-        draw_char(part.pos, part.part)
-
-    def on_new_fruit(fruit):
-        draw_char(fruit, SnakeGame.FRUIT)
-
-    def on_snake_move(new_head, old_head, old_tail):
-        draw_part(new_head)
-        draw_part(old_head)
-        if old_tail is not None:
-            draw_char(old_tail.pos, SnakeGame.BLANK)
-
-    # register event handlers
-    game.on_new_fruit = on_new_fruit
-    game.on_snake_move = on_snake_move
-
-    # initial board
-    draw_part(game.snake[0])
-    for body in itertools.islice(game.snake, 1, None):
-        draw_part(body)
-    for fruit in game.fruits:
-        draw_char(fruit, SnakeGame.FRUIT)
-
-    KEY_ESC = 27
-    KEY_SPACE = ord(" ")
-    key_map = {
-        KEY_LEFT: SnakeGame.Move.LEFT,
-        KEY_RIGHT: SnakeGame.Move.RIGHT,
-        KEY_UP: SnakeGame.Move.UP,
-        KEY_DOWN: SnakeGame.Move.DOWN,
-    }
-    is_paused = False
-    key = None
-    while key != KEY_ESC:
-        win.border(0)
-        win.timeout(100)
-        win.addstr(0, 2, f"Score : {game.score} ")
-        if game.game_over:
-            win.addstr(game.height + 1, 2, "Game over")
-        elif is_paused:
-            win.addstr(game.height + 1, 2, "Paused")
-
-        if model and not game.game_over:
-            game_actions = [
-                SnakeGame.Move.UP,
-                SnakeGame.Move.DOWN,
-                SnakeGame.Move.LEFT,
-                SnakeGame.Move.RIGHT,
-            ]
-            game.tick(game_actions[choose_action(model, game.get_board())])
-
-            event = win.getch()
-            key = None if event == -1 else event
-            if key == KEY_ESC:
-                break
-        else:
-            event = win.getch()
-            key = None if event == -1 else event
-
-            # pause if space bar is pressed
-            if key == KEY_SPACE:
-                is_paused = not is_paused
-                continue
-
-            if key == KEY_ESC:
-                break
-
-            if key not in key_map:
-                key = None
-
-            if not game.game_over and not is_paused:
-                game.tick(new_direction=key_map.get(key))
-
-
-if __name__ == "__main__":
-    game = SnakeGame(20, 13, 3)
-    play_game(game)
