@@ -28,13 +28,18 @@ def play_game(game: SnakeGame, model: Optional["tf.keras.Model"] = None):
     try:
         if model:
             snake_terminal = SnakeTerminalWithModel(game, scr_win, model)
+            snake_terminal.run_state_machine(initial_state="PAUSED")
         else:
             snake_terminal = SnakeTerminal(game, scr_win)
+            snake_terminal.run_state_machine(initial_state="PLAY")
 
-        snake_terminal.run_game()
     finally:
         cleanup()
         atexit.unregister(cleanup)
+
+
+def clamp_value(m, v, M):
+    return max(m, min(v, M))
 
 
 class SnakeTerminal:
@@ -71,7 +76,6 @@ class SnakeTerminal:
     ):
         self.game = game
         self.scr_win = scr_win
-        self.paused = False
         self.quit = False
         self.seconds_per_move = 0.15
 
@@ -125,7 +129,6 @@ class SnakeTerminal:
             self.draw_element(fruit, SnakeGame.BoardElement.FRUIT)
 
     def initialize_info_window(self):
-
         height = self.game_win.getmaxyx()[0]
         offset_x = self.game_win.getmaxyx()[1] + 2
         width = self.scr_win.getmaxyx()[1] - offset_x
@@ -133,69 +136,61 @@ class SnakeTerminal:
 
         pause_key_name = "space" if self.KEY_PAUSE == ord(" ") else chr(self.KEY_PAUSE)
 
-        self.info_win.addstr(4, 0, "Controls:")
-        self.info_win.addstr(5, 0, f" {chr(self.KEY_QUIT):>5} quit game")
-        self.info_win.addstr(6, 0, f" {pause_key_name:>5} pause game")
+        self.info_win.addstr(5, 0, "Controls:")
+        self.info_win.addstr(6, 0, f" {chr(self.KEY_QUIT):>5} quit game")
+        self.info_win.addstr(7, 0, f" {pause_key_name:>5} pause game")
 
     def update_info_window(self):
         self.info_win.addstr(1, 0, f"Score: {self.game.score}")
         if self.game.game_over:
             self.info_win.addstr(2, 0, "GAME OVER")
-        elif self.paused:
+        elif self.state == "PAUSED":
             self.info_win.addstr(2, 0, "PAUSED")
 
         self.info_win.refresh()
 
-    def pause(self):
-        self.game_win.nodelay(False)
-        self.paused = True
-        self.update_info_window()
+    def get_next_key(self, timeout: Optional[float] = None):
+        self.game_win.nodelay(timeout is not None)
+        return self.game_win.getch()
 
-        while True:
-            key = self.game_win.getch()
-            if key == -1:
-                pass
-            elif key == self.KEY_QUIT:
-                self.quit = True
-                break
-            elif key == self.KEY_PAUSE and not self.game.game_over:
-                break
-
-        self.paused = False
-        self.update_info_window()
-        self.game_win.nodelay(True)
-
-    def get_latest_key(self):
-        latest = -1
-        while True:
-            key = self.game_win.getch()
-            if key == -1:
-                break
-            latest = key
-        return latest
-
-    def advance_game(self, key: int):
-        self.game.tick(new_direction=self.KEY_MAP.get(key))
+    def advance_game(self, action: Optional["SnakeGame.Move"]):
+        self.game.tick(action=action)
         self.game_win.refresh()
 
         self.update_info_window()
 
-        # update score text
-
-    def run_game(self):
-        while not self.quit:
-            self.game_win.timeout(int(self.seconds_per_move * 1000))
-            key = self.game_win.getch()
-
-            if key == self.KEY_PAUSE:
-                self.pause()
-            elif key == self.KEY_QUIT:
-                self.quit = True
+    def run_state_machine(self, initial_state):
+        self.state = initial_state
+        while self.state != "QUIT":
+            self.update_info_window()
+            if self.state == "PLAY":
+                self.state = self.play()
+            elif self.state == "PAUSED":
+                self.state = self.paused()
             else:
-                self.advance_game(key)
+                raise ValueError(f"Unknown state '{self.state}'")
+
+    def paused(self):
+        while True:
+            key = self.get_next_key()
+            if key == self.KEY_QUIT:
+                return "QUIT"
+            elif key == self.KEY_PAUSE and not self.game.game_over:
+                return "PLAY"
+
+    def play(self):
+        while True:
+            key = self.get_next_key(self.seconds_per_move)
+
+            if key == self.KEY_QUIT:
+                return "QUIT"
+            elif key == self.KEY_PAUSE:
+                return "PAUSED"
+            else:
+                self.advance_game(self.KEY_MAP.get(key))
 
             if self.game.game_over:
-                self.pause()
+                return "PAUSED"
 
 
 class SnakeTerminalWithModel(SnakeTerminal):
@@ -207,8 +202,8 @@ class SnakeTerminalWithModel(SnakeTerminal):
         (SnakeGame.Move.RIGHT, "RIGHT"),
     ]
 
-    KEY_SLOWER = ord("+")
-    KEY_FASTER = ord("-")
+    KEY_SLOWER = ord("-")
+    KEY_FASTER = ord("+")
     MIN_SECONDS_PER_MOVE = 0.1
     MAX_SECONDS_PER_MOVE = 1.6
 
@@ -222,6 +217,7 @@ class SnakeTerminalWithModel(SnakeTerminal):
         self.model = model
         self.next_action = None
         self.last_key = None
+        self.seconds_per_move = 0.2
 
         self.initialize_model_window()
 
@@ -236,15 +232,12 @@ class SnakeTerminalWithModel(SnakeTerminal):
     def initialize_info_window(self):
         super().initialize_info_window()
 
-        self.info_win.addstr(7, 0, f" {chr(self.KEY_FASTER):>5} increase speed")
-        self.info_win.addstr(8, 0, f" {chr(self.KEY_SLOWER):>5} decrease speed")
+        self.info_win.addstr(8, 0, f" {chr(self.KEY_FASTER):>5} increase speed")
+        self.info_win.addstr(9, 0, f" {chr(self.KEY_SLOWER):>5} decrease speed")
 
-    def update_next_action(self):
-        self.next_action = self.GAME_ACTIONS[
-            choose_action(self.model, self.game.get_board())
-        ]
-
-        self.update_model_window()
+    def update_info_window(self):
+        self.info_win.addstr(3, 0, f" move delay: {self.seconds_per_move}s")
+        super().update_info_window()
 
     def update_model_window(self):
 
@@ -270,26 +263,58 @@ class SnakeTerminalWithModel(SnakeTerminal):
 
         self.model_win.refresh()
 
-    def advance_game(self, key: int):
+    def update_next_action(self):
+        self.next_action = self.GAME_ACTIONS[
+            choose_action(self.model, self.game.get_board())
+        ]
+        self.update_model_window()
 
-        if key == self.KEY_SLOWER:
-            self.seconds_per_move = max(
-                self.MIN_SECONDS_PER_MOVE, self.seconds_per_move / 2
-            )
-            time.sleep(0.1)  # short delay to prevent zipping through all the speeds
-        elif key == self.KEY_FASTER:
-            self.seconds_per_move = min(
-                self.MAX_SECONDS_PER_MOVE, self.seconds_per_move * 2
-            )
-            time.sleep(0.1)
-        else:
-            self.game.tick(new_direction=self.next_action[0])
-            self.game_win.refresh()
-
+    def advance_game(self, action: Optional["SnakeGame.Move"]):
+        super().advance_game(action)
+        if not self.game.game_over:
             self.update_next_action()
-            self.update_info_window()
 
-        self.last_key = key
+    def update_play_speed(self, key: int):
+        old_delay = self.seconds_per_move
+        self.seconds_per_move = clamp_value(
+            self.MIN_SECONDS_PER_MOVE,
+            self.seconds_per_move * (0.5 if key == self.KEY_FASTER else 2),
+            self.MAX_SECONDS_PER_MOVE,
+        )
+        self.update_info_window()
+        return old_delay - self.seconds_per_move
+
+    def play(self):
+        next_move_time = -1
+        while True:
+            now = time.thread_time()
+            if next_move_time <= now:
+                self.advance_game(self.next_action[0])
+                if self.game.game_over:
+                    return "PAUSED"
+                self.update_next_action()
+                next_move_time = now + self.seconds_per_move
+
+            key = self.get_next_key(int(next_move_time - now * 1000))
+
+            if key == self.KEY_QUIT:
+                return "QUIT"
+            elif key == self.KEY_PAUSE:
+                return "PAUSED"
+            elif key in [self.KEY_FASTER, self.KEY_SLOWER]:
+                next_move_time += self.update_play_speed(key)
+
+    def paused(self):
+        while True:
+            key = self.get_next_key()
+            if key == self.KEY_QUIT:
+                return "QUIT"
+            elif key == self.KEY_PAUSE and not self.game.game_over:
+                return "PLAY"
+            elif key in [self.KEY_FASTER, self.KEY_SLOWER]:
+                self.update_play_speed(key)
+            elif key in self.KEY_MAP and not self.game.game_over:
+                self.advance_game(self.KEY_MAP[key])
 
 
 if __name__ == "__main__":

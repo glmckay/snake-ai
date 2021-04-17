@@ -115,15 +115,15 @@ class SnakeGame:
             numpy.roll(self.board, shift), rotations[self.snake_direction]
         )
 
-    def tick(self, new_direction):
+    def tick(self, action: Optional["SnakeGame.Move"] = None):
         if self.game_over:
             return
 
         self.moves_since_last_fruit += 1
         prev_direction = self.snake_direction
-        if new_direction is not None:
-            if not self.snake_direction.is_opposite(new_direction):
-                self.snake_direction = new_direction
+        if action is not None:
+            if not self.snake_direction.is_opposite(action):
+                self.snake_direction = action
             elif self.reverse_death:
                 self.game_over = True
                 return
@@ -205,4 +205,3 @@ class SnakeGame:
             return cls.BoardElement.BODY_RIGHT_UP
         elif diff_change == (-1, -1):
             return cls.BoardElement.BODY_LEFT_UP
-
