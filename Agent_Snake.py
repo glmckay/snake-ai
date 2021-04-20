@@ -90,9 +90,12 @@ def train_step(model, optimizer, observations, actions, discounted_rewards):
 def create_snake_model(width, height, activation_func):
     model = tf.keras.models.Sequential([
         tf.keras.layers.Flatten(),
-        tf.keras.layers.Dense(width*height*10, activation = 'relu'),
+        tf.keras.layers.Reshape((width,height,1)),
+        tf.keras.layers.Conv2D(48,4,activation='relu'),
+        # tf.keras.layers.Dense(width*height*10, activation = 'relu'),
         # tf.keras.layers.Dense(width*height*10, activation = 'sigmoid'),
         # tf.keras.layers.Dense(width*height*5, activation = 'sigmoid'),
+        tf.keras.layers.Flatten(),
         tf.keras.layers.Dense(4, activation = activation_func)
     ])
     return model
