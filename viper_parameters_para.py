@@ -51,9 +51,9 @@ def reward(game):
     if game.game_over:
         return GAME_OVER_REWARD
     elif game.moves_since_last_fruit == 0:
-        return 1.0
+        return 2.0
     elif game.moves_since_last_fruit % 20 == 0:
-        return -0.1520
+        return -0.201 
     else:
         return 0
 
@@ -93,7 +93,7 @@ def train(num_episodes, episode_length, gamma=0.7):
         )
 
 
-train(100, 116, 0.7)
+train(100, 500, 0.5)
 
 game = SnakeGame(**opts)
 play_game(game, snake_model)
