@@ -1,0 +1,2 @@
+Layer1_Name,Layer1_units,Layer1_activation,Layer2_Name,Layer2_units,Layer2_activation,Layer3_Name,Layer3_units,Layer3_activation,Layer4_Name,Layer4_units,Layer4_activation,LearningRate,Optimizer,Loss,Batch,EpisodeLength,AvgTurnsGG,AvgPoints
+Dense,2000,relu,Dense,1000,relu,Dense,500,relu,Dense,4,sigmoid,1,SGD,CategoricalCrossentropy,100,100,443.2073,0.8234

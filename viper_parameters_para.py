@@ -9,34 +9,26 @@ from Agent_Snake import (
 import numpy
 from snake import SnakeGame
 from snake_terminal import play_game
-
+from main import game_options
 import os
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 import tensorflow as tf  # noqa: E402
 
-opts = {
-    "width": 10,
-    "height": 10,
-    "num_fruits": 1,
-    "walls": False,
-    "grows": True,
-}
+opts = game_options
 
 learning_rate = 1e-3
 gamma = 0.99
 batch_size = 69
 activation_func = None  # tf.keras.activations.softmax
 optimizer = tf.keras.optimizers.Adam(learning_rate)
-NUM_FRUITS = 1
 
 # Initialize things
 memory = Memory()
-snake_model = create_snake_model(opts["width"], opts["height"], activation_func)
+snake_model = create_snake_model(opts["width"], opts["height"], layers)
 
 
 ####### clear memory at some point
-
 game_actions = [
     SnakeGame.Move.UP,
     SnakeGame.Move.DOWN,
@@ -59,7 +51,7 @@ def reward(game):
 
 
 def train(num_episodes, episode_length, gamma=0.7):
-
+    
     for episode_no in range(num_episodes):
 
         print(f"\rEpisode {episode_no} out of {num_episodes}", end="\r")
