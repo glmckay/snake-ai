@@ -10,6 +10,7 @@ import os
 import pandas as pd
 from collections import defaultdict
 from itertools import product
+import math
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 import tensorflow as tf  # noqa: E402
@@ -152,7 +153,7 @@ def csv_to_model(row):
     layers = []
     k = 1
     # reconstruct all the parameters for the layers
-    while f"Layer{k}_Name" in row.index and row[f"Layer{k}_Name"] is not None:
+    while f"Layer{k}_Name" in row.index and str(row[f"Layer{k}_Name"]) != "None" and str(row[f"Layer{k}_Name"]) != "nan":
         columns = [col for col in row.index if col.startswith(f"Layer{k}")]
         length = len(f"Layer{k}_")
         parameters = {}
@@ -170,6 +171,8 @@ def csv_to_model(row):
                     parameters[param] = None
                 else:
                     parameters[param] = row[attribute]
+        print(k,parameters)
+        print(k, [layer_type[row[f"Layer{k}_Name"]] , parameters])
         layers.append([layer_type[row[f"Layer{k}_Name"]] , parameters])
         k += 1
     print(f"Creating model with layers {layers}")
