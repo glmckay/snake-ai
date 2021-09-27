@@ -94,12 +94,13 @@ test_parameters = {
         [
             [tf.keras.layers.Reshape, {"target_shape": (opts["width"],opts["height"],1)}],
             [tf.keras.layers.Conv2D, {"filters": 48, "kernel_size": 4, "activation":  tf.keras.activations.relu}],
+            [tf.keras.layers.Conv2D, {"filters": 24, "kernel_size": 4, "activation":  tf.keras.activations.relu}],
             [tf.keras.layers.Flatten, {}],
             [tf.keras.layers.Dense, {"units": opts["width"]*opts["height"]*5, "activation": tf.keras.activations.relu}],
             [tf.keras.layers.Dense, {"units": 4, "activation": None}]
         ]
     ],
-    "learning_rates": [3,1,5,0.1],
+    "learning_rates": [3,1,5],
     "optimizers": [tf.keras.optimizers.SGD], 
     "batches": [100],
     "episode_lengths": [100], 
