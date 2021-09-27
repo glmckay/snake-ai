@@ -1,5 +1,5 @@
 # snake-ai
-A minesweeper AI with neural networks. 
+An AI that plays the Snake Game built with neural networks with reinforcement learning. 
 
 * Download the repository
 * On the command line, go to the directory of the download
