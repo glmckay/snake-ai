@@ -2,8 +2,8 @@ import os
 import numpy as np
 from typing import Optional, Tuple
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
-import tensorflow as tf  
-from viper_model_testing import test_parameters_to_csv, best_model, test_parameters_to_csv
+import tensorflow as tf
+from viper_model_testing import test_parameters_to_csv, best_model
 from snake import SnakeGame
 from snake_terminal import play_game
 from game_options import game_options, change_options
@@ -28,6 +28,9 @@ if gpus:
         print(e)
 
 
-def play(width= game_options["width"], height= game_options["height"], num_fruits= game_options["num_fruits"], model: Optional["tf.keras.Model"] = None):
-    game = SnakeGame(width, height, num_fruits)
+def play(model: Optional["tf.keras.Model"] = None, **override_game_opts):
+    # with python 3.9, this could be SnakeGame(game_options | override_game_opts)
+    opts = game_options.copy()
+    opts.update(override_game_opts)
+    game = SnakeGame(**opts)
     play_game(game, model)

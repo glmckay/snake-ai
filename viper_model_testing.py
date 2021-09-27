@@ -1,21 +1,15 @@
-from numpy.core.numeric import NaN
 from Agent_Snake import (
-    aggregate_memories,
-    choose_action,
     Memory,
-    train_step,
-    discount_rewards,
     create_snake_model,
     train_model,
     score_model
 )
-import numpy
 from snake import SnakeGame
-from snake_terminal import play_game
 from game_options import game_options
 import os
 import pandas as pd
 from collections import defaultdict
+from itertools import product
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 import tensorflow as tf  # noqa: E402
@@ -48,43 +42,45 @@ game_actions = [
     SnakeGame.Move.RIGHT,
 ]
 
-# A function that creates a DataFrame containing the results of trying out various different parameters into the model
-def test_models(layers_struct, learning_rates, optimizers, batches, episode_lengths, num_episodes_list, rewards, gammas):
-    results = defaultdict(list)
-    for layers in layers_struct:
-        for learning_rate in learning_rates:
-            for optimizer in optimizers:
-                for batch_size in batches:
-                    for episode_length in episode_lengths:
-                        for num_episodes in num_episodes_list:
-                            for reward in rewards:
-                                for gamma in gammas:
-                                    print(f"Creating model with layers {layers}")
-                                    snake_model = create_snake_model(layers)
-                                    train_model(snake_model, learning_rate, optimizer, batch_size, episode_length, num_episodes, reward, gamma)
 
-                                    for i in range(len(layers)):
-                                        layer_type, layer_attributes = layers[i]
-                                        results[f"Layer{i+1}_Name"].append(layer_type.__name__)
-                                        for elem in layer_attributes:
-                                            if layer_attributes[elem] == None:
-                                                results[f"Layer{i+1}_{elem}"].append("None")
-                                            elif callable(layer_attributes[elem]):
-                                                results[f"Layer{i+1}_{elem}"].append(layer_attributes[elem].__name__)
-                                            else:
-                                                results[f"Layer{i+1}_{elem}"].append(layer_attributes[elem])
-                                    results["LearningRate"].append(learning_rate)
-                                    results["Optimizer"].append(optimizer.__name__)
-                                    results["Batch"].append(batch_size)
-                                    results["EpisodeLength"].append(episode_length)
-                                    results["NumEpisodes"].append(num_episodes)
-                                    results["GameOverReward"].append(reward[0])
-                                    results["UsualReward"].append(reward[1])
-                                    results["TimeOutReward"].append(reward[2])
-                                    results["Gamma"].append(gamma)
-                                    game_over, points = score_model(snake_model)
-                                    results["AvgTurnsGG"].append(game_over)
-                                    results["AvgPoints"].append(points)                                        
+def dict_product(**keyed_iterables):
+    for value_combination in product(*keyed_iterables.values()):
+        yield dict(zip(keyed_iterables.keys(), value_combination))
+
+
+# A function that creates a DataFrame containing the results of trying out various different parameters into the model
+# training_params must be a dictionary of iterables where the keys are arguments to train_model
+def test_models(layers_struct, **training_params):
+    results = defaultdict(list)
+
+    for layers in layers_struct:
+        for params in dict_product(**training_params):
+            print(f"Creating model with layers {layers}")
+            snake_model = create_snake_model(layers)
+            train_model(snake_model, **params)
+
+            for i in range(len(layers)):
+                layer_type, layer_attributes = layers[i]
+                results[f"Layer{i+1}_Name"].append(layer_type.__name__)
+                for elem in layer_attributes:
+                    if layer_attributes[elem] == None:
+                        results[f"Layer{i+1}_{elem}"].append("None")
+                    elif callable(layer_attributes[elem]):
+                        results[f"Layer{i+1}_{elem}"].append(layer_attributes[elem].__name__)
+                    else:
+                        results[f"Layer{i+1}_{elem}"].append(layer_attributes[elem])
+            results["LearningRate"].append(params.learning_rate)
+            results["Optimizer"].append(params.optimizer.__name__)
+            results["Batch"].append(params.batch_size)
+            results["EpisodeLength"].append(params.episode_length)
+            results["NumEpisodes"].append(params.num_episodes)
+            results["GameOverReward"].append(params.reward[0])
+            results["UsualReward"].append(params.reward[1])
+            results["TimeOutReward"].append(params.reward[2])
+            results["Gamma"].append(params.gamma)
+            game_over, points = score_model(snake_model)
+            results["AvgTurnsGG"].append(game_over)
+            results["AvgPoints"].append(points)
     return pd.DataFrame(results)
 
 
@@ -100,14 +96,14 @@ test_parameters = {
             [tf.keras.layers.Dense, {"units": 4, "activation": None}]
         ]
     ],
-    "learning_rates": [3,1,5],
-    "optimizers": [tf.keras.optimizers.SGD], 
-    "batches": [100],
-    "episode_lengths": [100], 
-    "num_episodes_list": [100],
-    "rewards": [[-1,1,-0.152]],
-    "gammas": [0.7,0.5]
-} 
+    "learning_rate": [3, 1, 5],
+    "optimizer": [tf.keras.optimizers.SGD],
+    "batche": [100],
+    "episode_length": [100],
+    "num_episodes": [100],
+    "reward": [[-1, 1, -0.152]],
+    "gamma": [0.7, 0.5]
+}
 
 # Other possible layer structure:
 # [
@@ -116,12 +112,12 @@ test_parameters = {
 #     [tf.keras.layers.Dense, {"units": opts["width"]*opts["height"]*5, "activation":  tf.keras.activations.relu}],
 #     [tf.keras.layers.Dense, {"units": 4, "activation": tf.keras.activations.sigmoid}]
 # ]
-        # [
-        #     [tf.keras.layers.Reshape, {"target_shape": (opts["width"],opts["height"],1)}],
-        #     [tf.keras.layers.Conv2D, {"filters": 48, "kernel_size": 4, "activation":  tf.keras.activations.relu}],
-        #     [tf.keras.layers.Flatten, {}],
-        #     [tf.keras.layers.Dense, {"units": 4, "activation": None}]
-        # ]
+# [
+#     [tf.keras.layers.Reshape, {"target_shape": (opts["width"],opts["height"],1)}],
+#     [tf.keras.layers.Conv2D, {"filters": 48, "kernel_size": 4, "activation":  tf.keras.activations.relu}],
+#     [tf.keras.layers.Flatten, {}],
+#     [tf.keras.layers.Dense, {"units": 4, "activation": None}]
+# ]
 
 # A function that calls on generates the results from varies test parameters and stores the results in a csv file
 def test_parameters_to_csv(test_parameters):
@@ -156,13 +152,13 @@ def csv_to_model(row):
     layers = []
     k = 1
     # reconstruct all the parameters for the layers
-    while f"Layer{k}_Name" in row.index and row[f"Layer{k}_Name"] != None:
+    while f"Layer{k}_Name" in row.index and row[f"Layer{k}_Name"] is not None:
         columns = [col for col in row.index if col.startswith(f"Layer{k}")]
         length = len(f"Layer{k}_")
         parameters = {}
         for attribute in columns:
             param = attribute[length:]
-            if param == "Name" or row[attribute] == None or pd.isnull(row[attribute]):
+            if param == "Name" or row[attribute] is None or pd.isnull(row[attribute]):
                 continue
             elif param == "kernel_size":
                 parameters[param] = int(row[attribute])
@@ -170,15 +166,15 @@ def csv_to_model(row):
                 a,b,c = row[attribute].split(',')
                 parameters[param] = (int(a[1:]),int(b),int(c[:-1]))
             else:
-                if row[attribute] == "None":           
+                if row[attribute] is "None":
                     parameters[param] = None
                 else:
-                    parameters[param] = row[attribute]    
+                    parameters[param] = row[attribute]
         layers.append([layer_type[row[f"Layer{k}_Name"]] , parameters])
         k += 1
     print(f"Creating model with layers {layers}")
     model = create_snake_model(layers)
-    train_model(model, row["LearningRate"], Optimize[row["Optimizer"]], row["Batch"], row["EpisodeLength"], row["NumEpisodes"], 
+    train_model(model, row["LearningRate"], Optimize[row["Optimizer"]], row["Batch"], row["EpisodeLength"], row["NumEpisodes"],
     [row["GameOverReward"], row["UsualReward"], row["TimeOutReward"]], row["Gamma"])
     return model
 

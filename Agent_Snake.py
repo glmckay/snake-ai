@@ -89,7 +89,7 @@ def discount_rewards(rewards, game_over_reward, gamma=0.5):
     return normalize(discounted_rewards)
 
 
-# A reward function 
+# A reward function
 
 def reward(game, GameOverReward, UsualReward, TimeOutReward):
     if game.game_over:
@@ -136,11 +136,9 @@ def train_step(model, optimizer, observations, actions, discounted_rewards):
 #     [tf.keras.layers.Dense, {"units": 4, "activation": tf.keras.activations.sigmoid}]
 # ]
 def create_snake_model(layers):
-    sequence = [tf.keras.layers.Flatten()]
-    for layer_type,layer_attributes in layers:
-        sequence.append(layer_type(**layer_attributes))
-
-    model = tf.keras.models.Sequential(sequence)
+    model = tf.keras.models.Sequential(
+        [tf.keras.layers.Flatten(), *(layer(**attrs) for layer, attrs in layers)]
+    )
     return model
 
 
@@ -189,7 +187,7 @@ def train_model(model, learning_rate, optimizer, batch_size, episode_length, num
 
 
 # A function that calculates how good a particular model is
-# It will output two metrics: 
+# It will output two metrics:
 #       the average number of turns it takes for the model to game over (maximum number of turn is episode_length)
 #       the average number of fruits the model picks up before game over
 
