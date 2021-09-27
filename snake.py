@@ -43,7 +43,13 @@ class SnakeGame:
             return self.value[0] == -rhs.value[0] and self.value[1] == -rhs.value[1]
 
     def __init__(
-        self, width =10, height=10, num_fruits=1, walls=False, grows=True, reverse_death=False
+        self,
+        width=10,
+        height=10,
+        num_fruits=1,
+        walls=False,
+        grows=True,
+        reverse_death=False,
     ):
 
         assert width >= 3 and height >= 3
@@ -60,6 +66,7 @@ class SnakeGame:
         self.snake_direction = SnakeGame.Move.RIGHT
         self.fruits = []
         self.score = 0
+        self.moves_to_get_last_fruit = 0
         self.moves_since_last_fruit = 0
         self.game_over = False
         self.on_new_fruit: Optional[Callable] = None
@@ -157,6 +164,7 @@ class SnakeGame:
             return
         elif self.board[new_head_pos] == SnakeGame.FRUIT:
             self.score += 1
+            self.moves_to_get_last_fruit = self.moves_since_last_fruit
             self.moves_since_last_fruit = 0
             self.fruits.remove(new_head_pos)
             self.spawn_fruit()
