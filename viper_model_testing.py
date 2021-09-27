@@ -1,3 +1,4 @@
+from numpy.core.numeric import NaN
 from Agent_Snake import (
     aggregate_memories,
     choose_action,
@@ -157,18 +158,18 @@ def csv_to_model(row):
         parameters = {}
         for attribute in columns:
             param = attribute[length:]
-            if param == "Name" or row[attribute] == None:
+            if param == "Name" or row[attribute] == None or pd.isnull(row[attribute]):
                 continue
-            if param == "kernel_size":
+            elif param == "kernel_size":
                 parameters[param] = int(row[attribute])
             elif param == "target_shape":
                 a,b,c = row[attribute].split(',')
                 parameters[param] = (int(a[1:]),int(b),int(c[:-1]))
             else:
-                if row[attribute] == "None":
+                if row[attribute] == "None":           
                     parameters[param] = None
                 else:
-                    parameters[param] = row[attribute]
+                    parameters[param] = row[attribute]    
         layers.append([layer_type[row[f"Layer{k}_Name"]] , parameters])
         k += 1
     print(f"Creating model with layers {layers}")

@@ -163,13 +163,11 @@ def train_model(model, learning_rate, optimizer, batch_size, episode_length, num
 
         games = [SnakeGame(**opts) for i in range(batch_size)]
         memories = [Memory() for i in range(batch_size)]
-
         for _ in range(episode_length):
             observations = np.array([game.get_board() for game in games])
             actions = choose_action(model, observations, single=False)
             for game, action in zip(games, actions):
                 game.tick(game_actions[action])
-
             for memory, observation, action, game in zip(
                 memories, observations, actions, games
             ):
@@ -203,19 +201,21 @@ def score_model(model, episode_length = 100, num_episodes = 100, batch_size = 10
 
         games = [SnakeGame(**opts) for i in range(batch_size)]
         game_finished = [False for i in range(batch_size)]
+
         for i in range(episode_length):
             observations = np.array([game.get_board() for game in games])
             actions = choose_action(model, observations, single=False)
             for game, action, game_done in zip(games, actions, game_finished):
                 game.tick(game_actions[action])
-
                 if not game_done and game.game_over:
-                    turns_game_over += i+1
+                    turns_game_over += i
+                    print(i,game.score)
                     game_finished[i] = True
 
+        print([game.score for game in games])
         turns_game_over += sum([0 if fin else episode_length for fin in game_finished])
         number_of_fruits += sum([game.score for game in games])
-    AvgTurnsGG = turns_game_over / (num_episodes * batch_size)
-    AvgGameScore = number_of_fruits/ (num_episodes * batch_size)
+    AvgTurnsGG = turns_game_over / (episode_length * batch_size)
+    AvgGameScore = number_of_fruits/ (episode_length * batch_size)
     print(f"The average number of turns it takes to game over is {AvgTurnsGG}. \n The average score is {AvgGameScore}.")
     return (AvgTurnsGG, AvgGameScore)

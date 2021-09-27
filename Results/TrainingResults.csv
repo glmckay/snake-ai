@@ -1,49 +1,49 @@
 Layer1_Name,Layer1_units,Layer1_activation,Layer2_Name,Layer2_units,Layer2_activation,LearningRate,Optimizer,Batch,EpisodeLength,NumEpisodes,GameOverReward,UsualReward,TimeOutReward,Gamma,AvgTurnsGG,AvgPoints,Layer3_Name,Layer3_units,Layer3_activation,Layer4_Name,Layer4_units,Layer4_activation,Layer1_target_shape,Layer2_filters,Layer2_kernel_size
-Dense,1000.0,relu,Dense,4.0,sigmoid,1.0,SGD,100,100,100,-1,1,-0.152,0.7,447.2026,0.8173,,,,,,,,,
-Dense,1000.0,relu,Dense,4.0,sigmoid,0.1,SGD,100,100,100,-1,1,-0.152,0.7,437.0866,0.8178,,,,,,,,,
-Dense,1000.0,relu,Dense,4.0,sigmoid,0.01,SGD,100,100,100,-1,1,-0.152,0.7,460.477,0.8235,,,,,,,,,
-Dense,1000.0,relu,Dense,4.0,sigmoid,5.0,SGD,100,100,100,-1,1,-0.152,0.7,437.028,0.8274,,,,,,,,,
-Dense,1000.0,relu,Dense,4.0,sigmoid,1.0,SGD,100,100,100,-1,1,-0.152,0.7,434.4678,0.8229,,,,,,,,,
-Dense,1000.0,relu,Dense,4.0,sigmoid,1.0,SGD,100,100,100,-1,1,-0.152,0.9,437.4288,0.8234,,,,,,,,,
-Dense,1000.0,relu,Dense,4.0,sigmoid,1.0,SGD,100,100,100,-1,1,-0.2,0.7,431.2295,0.8135,,,,,,,,,
-Dense,1000.0,relu,Dense,4.0,sigmoid,1.0,SGD,100,100,100,-1,1,-0.2,0.9,441.1937,0.8173,,,,,,,,,
-Dense,1000.0,relu,Dense,4.0,sigmoid,0.1,SGD,100,100,100,-1,1,-0.152,0.7,432.267,0.8086,,,,,,,,,
-Dense,1000.0,relu,Dense,4.0,sigmoid,0.1,SGD,100,100,100,-1,1,-0.152,0.9,438.8271,0.8224,,,,,,,,,
-Dense,1000.0,relu,Dense,4.0,sigmoid,0.1,SGD,100,100,100,-1,1,-0.2,0.7,446.3809,0.8249,,,,,,,,,
-Dense,1000.0,relu,Dense,4.0,sigmoid,0.1,SGD,100,100,100,-1,1,-0.2,0.9,449.9665,0.8244,,,,,,,,,
-Dense,1000.0,relu,Dense,4.0,sigmoid,0.01,SGD,100,100,100,-1,1,-0.152,0.7,452.5648,0.8262,,,,,,,,,
-Dense,1000.0,relu,Dense,4.0,sigmoid,0.01,SGD,100,100,100,-1,1,-0.152,0.9,442.2837,0.8099,,,,,,,,,
-Dense,1000.0,relu,Dense,4.0,sigmoid,0.01,SGD,100,100,100,-1,1,-0.2,0.7,430.7472,0.822,,,,,,,,,
-Dense,1000.0,relu,Dense,4.0,sigmoid,0.01,SGD,100,100,100,-1,1,-0.2,0.9,421.8503,0.8152,,,,,,,,,
-Dense,1000.0,relu,Dense,4.0,sigmoid,5.0,SGD,100,100,100,-1,1,-0.152,0.7,445.7066,0.8337,,,,,,,,,
-Dense,1000.0,relu,Dense,4.0,sigmoid,5.0,SGD,100,100,100,-1,1,-0.152,0.9,447.6155,0.8254,,,,,,,,,
-Dense,1000.0,relu,Dense,4.0,sigmoid,5.0,SGD,100,100,100,-1,1,-0.2,0.7,442.0494,0.8266,,,,,,,,,
-Dense,1000.0,relu,Dense,4.0,sigmoid,5.0,SGD,100,100,100,-1,1,-0.2,0.9,432.8441,0.8185,,,,,,,,,
-Dense,2000.0,relu,Dense,1000.0,relu,1.0,SGD,100,100,100,-1,1,-0.152,0.7,451.7563,0.8297,Dense,500.0,relu,Dense,4.0,sigmoid,,,
-Dense,2000.0,relu,Dense,1000.0,relu,0.1,SGD,100,100,100,-1,1,-0.152,0.7,438.9594,0.8286,Dense,500.0,relu,Dense,4.0,sigmoid,,,
-Dense,2000.0,relu,Dense,1000.0,relu,0.01,SGD,100,100,100,-1,1,-0.152,0.7,453.5869,0.8251,Dense,500.0,relu,Dense,4.0,sigmoid,,,
-Dense,2000.0,relu,Dense,1000.0,relu,5.0,SGD,100,100,100,-1,1,-0.152,0.7,427.2692,0.8403,Dense,500.0,relu,Dense,4.0,sigmoid,,,
-Dense,2000.0,tanh,Dense,1000.0,tanh,1.0,SGD,100,100,100,-1,1,-0.152,0.7,445.7639,0.8341,Dense,500.0,tanh,Dense,4.0,sigmoid,,,
-Dense,2000.0,tanh,Dense,1000.0,tanh,0.1,SGD,100,100,100,-1,1,-0.152,0.7,425.1914,0.8323,Dense,500.0,tanh,Dense,4.0,sigmoid,,,
-Dense,2000.0,tanh,Dense,1000.0,tanh,0.01,SGD,100,100,100,-1,1,-0.152,0.7,428.7694,0.8058,Dense,500.0,tanh,Dense,4.0,sigmoid,,,
-Dense,2000.0,tanh,Dense,1000.0,tanh,5.0,SGD,100,100,100,-1,1,-0.152,0.7,366.3238,0.8375,Dense,500.0,tanh,Dense,4.0,sigmoid,,,
-Dense,2000.0,sigmoid,Dense,1000.0,sigmoid,1.0,SGD,100,100,100,-1,1,-0.152,0.7,396.7462,0.876,Dense,500.0,sigmoid,Dense,4.0,sigmoid,,,
-Dense,2000.0,sigmoid,Dense,1000.0,sigmoid,0.1,SGD,100,100,100,-1,1,-0.152,0.7,405.315,0.845,Dense,500.0,sigmoid,Dense,4.0,sigmoid,,,
-Dense,2000.0,sigmoid,Dense,1000.0,sigmoid,0.01,SGD,100,100,100,-1,1,-0.152,0.7,447.2613,0.8242,Dense,500.0,sigmoid,Dense,4.0,sigmoid,,,
-Dense,2000.0,sigmoid,Dense,1000.0,sigmoid,5.0,SGD,100,100,100,-1,1,-0.152,0.7,326.1633,0.7884,Dense,500.0,sigmoid,Dense,4.0,sigmoid,,,
-Reshape,,,Conv2D,,relu,1.0,SGD,100,100,100,-1,1,-0.152,0.7,97.1365,1.2261,Flatten,,,Dense,4.0,None,"(10, 10, 1)",48.0,4.0
-Reshape,,,Conv2D,,relu,0.1,SGD,100,100,100,-1,1,-0.152,0.7,461.9766,0.8201,Flatten,,,Dense,4.0,None,"(10, 10, 1)",48.0,4.0
-Reshape,,,Conv2D,,relu,0.01,SGD,100,100,100,-1,1,-0.152,0.7,432.8789,0.8137,Flatten,,,Dense,4.0,None,"(10, 10, 1)",48.0,4.0
-Reshape,,,Conv2D,,relu,5.0,SGD,100,100,100,-1,1,-0.152,0.7,99.1519,3.4626,Flatten,,,Dense,4.0,None,"(10, 10, 1)",48.0,4.0
-Reshape,,,Conv2D,,relu,1.0,SGD,100,100,100,-1,1,-0.152,0.7,448.6701,0.8257,Flatten,,,Dense,4.0,sigmoid,"(10, 10, 1)",48.0,4.0
-Reshape,,,Conv2D,,relu,0.1,SGD,100,100,100,-1,1,-0.152,0.7,411.4935,0.8023,Flatten,,,Dense,4.0,sigmoid,"(10, 10, 1)",48.0,4.0
-Reshape,,,Conv2D,,relu,0.01,SGD,100,100,100,-1,1,-0.152,0.7,432.0645,0.8136,Flatten,,,Dense,4.0,sigmoid,"(10, 10, 1)",48.0,4.0
-Reshape,,,Conv2D,,relu,5.0,SGD,100,100,100,-1,1,-0.152,0.7,431.6581,0.8143,Flatten,,,Dense,4.0,sigmoid,"(10, 10, 1)",48.0,4.0
-Reshape,,,Conv2D,,tanh,1.0,SGD,100,100,100,-1,1,-0.152,0.7,432.8269,0.8229,Flatten,,,Dense,4.0,sigmoid,"(10, 10, 1)",48.0,4.0
-Reshape,,,Conv2D,,tanh,0.1,SGD,100,100,100,-1,1,-0.152,0.7,450.7945,0.8113,Flatten,,,Dense,4.0,sigmoid,"(10, 10, 1)",48.0,4.0
-Reshape,,,Conv2D,,tanh,0.01,SGD,100,100,100,-1,1,-0.152,0.7,445.7806,0.8171,Flatten,,,Dense,4.0,sigmoid,"(10, 10, 1)",48.0,4.0
-Reshape,,,Conv2D,,tanh,5.0,SGD,100,100,100,-1,1,-0.152,0.7,349.9165,0.9125,Flatten,,,Dense,4.0,sigmoid,"(10, 10, 1)",48.0,4.0
-Reshape,,,Conv2D,,softmax,1.0,SGD,100,100,100,-1,1,-0.152,0.7,441.7961,0.8225,Flatten,,,Dense,4.0,sigmoid,"(10, 10, 1)",48.0,4.0
-Reshape,,,Conv2D,,softmax,0.1,SGD,100,100,100,-1,1,-0.152,0.7,435.6583,0.8212,Flatten,,,Dense,4.0,sigmoid,"(10, 10, 1)",48.0,4.0
-Reshape,,,Conv2D,,softmax,0.01,SGD,100,100,100,-1,1,-0.152,0.7,430.5875,0.816,Flatten,,,Dense,4.0,sigmoid,"(10, 10, 1)",48.0,4.0
-Reshape,,,Conv2D,,softmax,5.0,SGD,100,100,100,-1,1,-0.152,0.7,96.0579,1.1548,Flatten,,,Dense,4.0,sigmoid,"(10, 10, 1)",48.0,4.0
+Dense,1000,relu,Dense,4,sigmoid,1,SGD,100,100,100,-1,1,-0.152,0.7,0,0.8173,,,,,,,,,
+Dense,1000,relu,Dense,4,sigmoid,0.1,SGD,100,100,100,-1,1,-0.152,0.7,0,0.8178,,,,,,,,,
+Dense,1000,relu,Dense,4,sigmoid,0.01,SGD,100,100,100,-1,1,-0.152,0.7,0,0.8235,,,,,,,,,
+Dense,1000,relu,Dense,4,sigmoid,5,SGD,100,100,100,-1,1,-0.152,0.7,0,0.8274,,,,,,,,,
+Dense,1000,relu,Dense,4,sigmoid,1,SGD,100,100,100,-1,1,-0.152,0.7,0,0.8229,,,,,,,,,
+Dense,1000,relu,Dense,4,sigmoid,1,SGD,100,100,100,-1,1,-0.152,0.9,0,0.8234,,,,,,,,,
+Dense,1000,relu,Dense,4,sigmoid,1,SGD,100,100,100,-1,1,-0.2,0.7,0,0.8135,,,,,,,,,
+Dense,1000,relu,Dense,4,sigmoid,1,SGD,100,100,100,-1,1,-0.2,0.9,0,0.8173,,,,,,,,,
+Dense,1000,relu,Dense,4,sigmoid,0.1,SGD,100,100,100,-1,1,-0.152,0.7,0,0.8086,,,,,,,,,
+Dense,1000,relu,Dense,4,sigmoid,0.1,SGD,100,100,100,-1,1,-0.152,0.9,0,0.8224,,,,,,,,,
+Dense,1000,relu,Dense,4,sigmoid,0.1,SGD,100,100,100,-1,1,-0.2,0.7,0,0.8249,,,,,,,,,
+Dense,1000,relu,Dense,4,sigmoid,0.1,SGD,100,100,100,-1,1,-0.2,0.9,0,0.8244,,,,,,,,,
+Dense,1000,relu,Dense,4,sigmoid,0.01,SGD,100,100,100,-1,1,-0.152,0.7,0,0.8262,,,,,,,,,
+Dense,1000,relu,Dense,4,sigmoid,0.01,SGD,100,100,100,-1,1,-0.152,0.9,0,0.8099,,,,,,,,,
+Dense,1000,relu,Dense,4,sigmoid,0.01,SGD,100,100,100,-1,1,-0.2,0.7,0,0.822,,,,,,,,,
+Dense,1000,relu,Dense,4,sigmoid,0.01,SGD,100,100,100,-1,1,-0.2,0.9,0,0.8152,,,,,,,,,
+Dense,1000,relu,Dense,4,sigmoid,5,SGD,100,100,100,-1,1,-0.152,0.7,0,0.8337,,,,,,,,,
+Dense,1000,relu,Dense,4,sigmoid,5,SGD,100,100,100,-1,1,-0.152,0.9,0,0.8254,,,,,,,,,
+Dense,1000,relu,Dense,4,sigmoid,5,SGD,100,100,100,-1,1,-0.2,0.7,0,0.8266,,,,,,,,,
+Dense,1000,relu,Dense,4,sigmoid,5,SGD,100,100,100,-1,1,-0.2,0.9,0,0.8185,,,,,,,,,
+Dense,2000,relu,Dense,1000,relu,1,SGD,100,100,100,-1,1,-0.152,0.7,0,0.8297,Dense,500,relu,Dense,4,sigmoid,,,
+Dense,2000,relu,Dense,1000,relu,0.1,SGD,100,100,100,-1,1,-0.152,0.7,0,0.8286,Dense,500,relu,Dense,4,sigmoid,,,
+Dense,2000,relu,Dense,1000,relu,0.01,SGD,100,100,100,-1,1,-0.152,0.7,0,0.8251,Dense,500,relu,Dense,4,sigmoid,,,
+Dense,2000,relu,Dense,1000,relu,5,SGD,100,100,100,-1,1,-0.152,0.7,0,0.8403,Dense,500,relu,Dense,4,sigmoid,,,
+Dense,2000,tanh,Dense,1000,tanh,1,SGD,100,100,100,-1,1,-0.152,0.7,0,0.8341,Dense,500,tanh,Dense,4,sigmoid,,,
+Dense,2000,tanh,Dense,1000,tanh,0.1,SGD,100,100,100,-1,1,-0.152,0.7,0,0.8323,Dense,500,tanh,Dense,4,sigmoid,,,
+Dense,2000,tanh,Dense,1000,tanh,0.01,SGD,100,100,100,-1,1,-0.152,0.7,0,0.8058,Dense,500,tanh,Dense,4,sigmoid,,,
+Dense,2000,tanh,Dense,1000,tanh,5,SGD,100,100,100,-1,1,-0.152,0.7,0,0.8375,Dense,500,tanh,Dense,4,sigmoid,,,
+Dense,2000,sigmoid,Dense,1000,sigmoid,1,SGD,100,100,100,-1,1,-0.152,0.7,0,0.876,Dense,500,sigmoid,Dense,4,sigmoid,,,
+Dense,2000,sigmoid,Dense,1000,sigmoid,0.1,SGD,100,100,100,-1,1,-0.152,0.7,0,0.845,Dense,500,sigmoid,Dense,4,sigmoid,,,
+Dense,2000,sigmoid,Dense,1000,sigmoid,0.01,SGD,100,100,100,-1,1,-0.152,0.7,0,0.8242,Dense,500,sigmoid,Dense,4,sigmoid,,,
+Dense,2000,sigmoid,Dense,1000,sigmoid,5,SGD,100,100,100,-1,1,-0.152,0.7,0,0.7884,Dense,500,sigmoid,Dense,4,sigmoid,,,
+Reshape,,,Conv2D,,relu,1,SGD,100,100,100,-1,1,-0.152,0.7,0,1.2261,Flatten,,,Dense,4,None,"(10, 10, 1)",48,4
+Reshape,,,Conv2D,,relu,0.1,SGD,100,100,100,-1,1,-0.152,0.7,0,0.8201,Flatten,,,Dense,4,None,"(10, 10, 1)",48,4
+Reshape,,,Conv2D,,relu,0.01,SGD,100,100,100,-1,1,-0.152,0.7,0,0.8137,Flatten,,,Dense,4,None,"(10, 10, 1)",48,4
+Reshape,,,Conv2D,,relu,5,SGD,100,100,100,-1,1,-0.152,0.7,0,3.4626,Flatten,,,Dense,4,None,"(10, 10, 1)",48,4
+Reshape,,,Conv2D,,relu,1,SGD,100,100,100,-1,1,-0.152,0.7,0,0.8257,Flatten,,,Dense,4,sigmoid,"(10, 10, 1)",48,4
+Reshape,,,Conv2D,,relu,0.1,SGD,100,100,100,-1,1,-0.152,0.7,0,0.8023,Flatten,,,Dense,4,sigmoid,"(10, 10, 1)",48,4
+Reshape,,,Conv2D,,relu,0.01,SGD,100,100,100,-1,1,-0.152,0.7,0,0.8136,Flatten,,,Dense,4,sigmoid,"(10, 10, 1)",48,4
+Reshape,,,Conv2D,,relu,5,SGD,100,100,100,-1,1,-0.152,0.7,0,0.8143,Flatten,,,Dense,4,sigmoid,"(10, 10, 1)",48,4
+Reshape,,,Conv2D,,tanh,1,SGD,100,100,100,-1,1,-0.152,0.7,0,0.8229,Flatten,,,Dense,4,sigmoid,"(10, 10, 1)",48,4
+Reshape,,,Conv2D,,tanh,0.1,SGD,100,100,100,-1,1,-0.152,0.7,0,0.8113,Flatten,,,Dense,4,sigmoid,"(10, 10, 1)",48,4
+Reshape,,,Conv2D,,tanh,0.01,SGD,100,100,100,-1,1,-0.152,0.7,0,0.8171,Flatten,,,Dense,4,sigmoid,"(10, 10, 1)",48,4
+Reshape,,,Conv2D,,tanh,5,SGD,100,100,100,-1,1,-0.152,0.7,0,0.9125,Flatten,,,Dense,4,sigmoid,"(10, 10, 1)",48,4
+Reshape,,,Conv2D,,softmax,1,SGD,100,100,100,-1,1,-0.152,0.7,0,0.8225,Flatten,,,Dense,4,sigmoid,"(10, 10, 1)",48,4
+Reshape,,,Conv2D,,softmax,0.1,SGD,100,100,100,-1,1,-0.152,0.7,0,0.8212,Flatten,,,Dense,4,sigmoid,"(10, 10, 1)",48,4
+Reshape,,,Conv2D,,softmax,0.01,SGD,100,100,100,-1,1,-0.152,0.7,0,0.816,Flatten,,,Dense,4,sigmoid,"(10, 10, 1)",48,4
+Reshape,,,Conv2D,,softmax,5,SGD,100,100,100,-1,1,-0.152,0.7,0,1.1548,Flatten,,,Dense,4,sigmoid,"(10, 10, 1)",48,4

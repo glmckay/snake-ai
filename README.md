@@ -20,11 +20,11 @@ for some gamma close to but smaller than 1 (eg. 0.7). The idea is that a move ma
 
 # To play a game of Snake:
 Type in the function 
->play_game()
+>play()
 
 
 or 
->play_game(width= , height= , num_fruits= )
+>play(width= , height= , num_fruits= )
 
 The default is currently set to width = 10, height = 10, num_fruits =  1. 
 
@@ -62,4 +62,4 @@ where a sample parameter is the following:
 
 # Model Prediction
 To have the model play the game, run
->play_game(model)
+>play(model)
