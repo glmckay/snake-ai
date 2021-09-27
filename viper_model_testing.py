@@ -69,15 +69,15 @@ def test_models(layers_struct, **training_params):
                         results[f"Layer{i+1}_{elem}"].append(layer_attributes[elem].__name__)
                     else:
                         results[f"Layer{i+1}_{elem}"].append(layer_attributes[elem])
-            results["LearningRate"].append(params.learning_rate)
-            results["Optimizer"].append(params.optimizer.__name__)
-            results["Batch"].append(params.batch_size)
-            results["EpisodeLength"].append(params.episode_length)
-            results["NumEpisodes"].append(params.num_episodes)
-            results["GameOverReward"].append(params.reward[0])
-            results["UsualReward"].append(params.reward[1])
-            results["TimeOutReward"].append(params.reward[2])
-            results["Gamma"].append(params.gamma)
+            results["LearningRate"].append(params["learning_rate"])
+            results["Optimizer"].append(params["optimizer"].__name__)
+            results["Batch"].append(params["batch_size"])
+            results["EpisodeLength"].append(params["episode_length"])
+            results["NumEpisodes"].append(params["num_episodes"])
+            results["GameOverReward"].append(params["rewards"][0])
+            results["UsualReward"].append(params["rewards"][1])
+            results["TimeOutReward"].append(params["rewards"][2])
+            results["Gamma"].append(params["gamma"])
             game_over, points = score_model(snake_model)
             results["AvgTurnsGG"].append(game_over)
             results["AvgPoints"].append(points)
@@ -98,10 +98,10 @@ test_parameters = {
     ],
     "learning_rate": [3, 1, 5],
     "optimizer": [tf.keras.optimizers.SGD],
-    "batche": [100],
+    "batch_size": [100],
     "episode_length": [100],
     "num_episodes": [100],
-    "reward": [[-1, 1, -0.152]],
+    "rewards": [[-1, 1, -0.152]],
     "gamma": [0.7, 0.5]
 }
 
@@ -166,7 +166,7 @@ def csv_to_model(row):
                 a,b,c = row[attribute].split(',')
                 parameters[param] = (int(a[1:]),int(b),int(c[:-1]))
             else:
-                if row[attribute] is "None":
+                if row[attribute] == "None":
                     parameters[param] = None
                 else:
                     parameters[param] = row[attribute]
