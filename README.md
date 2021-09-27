@@ -13,16 +13,14 @@ First, we have the model play a full game (up to some fixed number of moves, bec
 
 Since the moves that were made leading up to a fruit being eaten should be rewarded (at a higher rate the closer the move is made to the fruit-eating move), we use a discounted reward instead, which is calculated based on the following formula:
 
-```math
-\text{discounted reward of move k} = \text{normalization}(\sum_{i=0}^{k} \gamma^{k-i}*\text{reward of move i})
-```
+><img src="https://render.githubusercontent.com/render/math?math=\text{discounted reward of move k} = \text{normalization}(\sum_{i=0}^{k} \gamma^{k-i} \left(\text{reward of move i})\right)">
 
 for some gamma close to but smaller than 1 (eg. 0.7). The idea is that a move made just before picking up a fruit would then have reward 0.7. The move before that 0.7^2, and before that 0.7^3.... This way, we are properly encouraging all moves leading up to picking up a fruit as well. 
 
 
 # To play a game of Snake:
 Type in the function 
->play_game(first_game)
+>play_game()
 
 
 or 
@@ -34,6 +32,9 @@ To play the game, simplying press the keys w,a,s,d for up, left, down and right 
 
 
 # Model Creation
+To create a trained model with parameters that give the highest successrate (out of all the parameters that we tested and stored in Results/TrainingResults.csv), run
+>model = best_model()
+
 To create a **trained** model, run 
 >model = csv_to_model(**parameter)
 
@@ -57,10 +58,8 @@ where a sample parameter is the following:
     "gammas": [0.7]
 } 
 ```
-To create a trained model with parameters that give the highest successrate (out of all the parameters that we tested and stored in Results/TrainingResults.csv), run
->model = best_model()
 
 
 # Model Prediction
 To have the model play the game, run
->play_game(first_game,model)
+>play_game(model)
