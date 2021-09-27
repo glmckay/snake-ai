@@ -7,7 +7,7 @@ from curses import KEY_RIGHT, KEY_LEFT, KEY_UP, KEY_DOWN
 from typing import Optional, Tuple
 from Agent_Snake import choose_action
 from snake import SnakeGame
-from main import game_options
+from game_options import game_options
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 import tensorflow as tf  # noqa: E402
@@ -218,8 +218,8 @@ class SnakeTerminalWithModel(SnakeTerminal):
         (SnakeGame.Move.RIGHT, "RIGHT"),
     ]
 
-    KEY_SLOWER = ord("-")
-    KEY_FASTER = ord("+")
+    KEY_SLOWER = ord("o")
+    KEY_FASTER = ord("p")
     MIN_SECONDS_PER_MOVE = 0.1
     MAX_SECONDS_PER_MOVE = 10
 

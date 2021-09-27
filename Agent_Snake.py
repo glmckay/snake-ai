@@ -2,7 +2,7 @@ import os
 import numpy as np
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 import tensorflow as tf  # noqa: E402
-from main import game_options
+from game_options import game_options
 from snake import SnakeGame
 
 gpus = tf.config.list_physical_devices('GPU')
@@ -96,7 +96,7 @@ def reward(game, GameOverReward, UsualReward, TimeOutReward):
         return GameOverReward
     elif game.moves_since_last_fruit == 0:
         return UsualReward
-    elif game.moves_since_last_fruit % 20 == 0:
+    elif game.moves_since_last_fruit >= 20:
         return TimeOutReward
     else:
         return 0

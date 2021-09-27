@@ -43,7 +43,7 @@ class SnakeGame:
             return self.value[0] == -rhs.value[0] and self.value[1] == -rhs.value[1]
 
     def __init__(
-        self, width, height, num_fruits=1, walls=False, grows=True, reverse_death=False
+        self, width =10, height=10, num_fruits=1, walls=False, grows=True, reverse_death=False
     ):
 
         assert width >= 3 and height >= 3

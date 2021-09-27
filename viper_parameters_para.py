@@ -9,7 +9,7 @@ from Agent_Snake import (
 import numpy
 from snake import SnakeGame
 from snake_terminal import play_game
-from main import game_options
+from game_options import game_options
 import os
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
