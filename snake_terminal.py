@@ -64,7 +64,7 @@ class SnakeTerminal:
     KEY_SLOWER = ord("-")
     KEY_FASTER = ord("+")
     MIN_SECONDS_PER_MOVE = 0.1
-    MAX_SECONDS_PER_MOVE = 10000000
+    MAX_SECONDS_PER_MOVE = 10
 
     KEY_MAP = {
         ord("a"): SnakeGame.Move.LEFT,
@@ -163,13 +163,15 @@ class SnakeTerminal:
 
         self.update_info_window()
 
-    def update_play_speed(self, key: int):
+    def update_play_speed(self, key: int):        
+        old_delay = self.seconds_per_move
         self.seconds_per_move = clamp_value(
             self.MIN_SECONDS_PER_MOVE,
             self.seconds_per_move * (0.5 if key == self.KEY_FASTER else 2),
             self.MAX_SECONDS_PER_MOVE,
         )
-        return self.seconds_per_move
+        self.update_info_window()
+        return old_delay - self.seconds_per_move
 
     def run_state_machine(self, initial_state):
         self.state = initial_state

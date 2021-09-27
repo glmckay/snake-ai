@@ -92,17 +92,20 @@ def test_models(layers_struct, learning_rates, optimizers, batches, episode_leng
 test_parameters = {
     "layers_struct": [
         [
-            [tf.keras.layers.Dense, {"units": opts["width"]*opts["height"]*10, "activation":  tf.keras.activations.relu}],
-            [tf.keras.layers.Dense, {"units": 4, "activation": tf.keras.activations.sigmoid}]
+            [tf.keras.layers.Reshape, {"target_shape": (opts["width"],opts["height"],1)}],
+            [tf.keras.layers.Conv2D, {"filters": 48, "kernel_size": 4, "activation":  tf.keras.activations.relu}],
+            [tf.keras.layers.Flatten, {}],
+            [tf.keras.layers.Dense, {"units": opts["width"]*opts["height"]*5, "activation": tf.keras.activations.relu}],
+            [tf.keras.layers.Dense, {"units": 4, "activation": None}]
         ]
     ],
-    "learning_rates": [1,0.1,0.01,5],
+    "learning_rates": [3,1,5,0.1],
     "optimizers": [tf.keras.optimizers.SGD], 
     "batches": [100],
     "episode_lengths": [100], 
     "num_episodes_list": [100],
     "rewards": [[-1,1,-0.152]],
-    "gammas": [0.7]
+    "gammas": [0.7,0.5]
 } 
 
 # Other possible layer structure:

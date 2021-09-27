@@ -208,11 +208,10 @@ def score_model(model, episode_length = 100, num_episodes = 100, batch_size = 10
             for game, action, game_done in zip(games, actions, game_finished):
                 game.tick(game_actions[action])
                 if not game_done and game.game_over:
-                    turns_game_over += i
-                    print(i,game.score)
-                    game_finished[i] = True
+                    if not game_finished:
+                        game_finished[i] = True
+                        turns_game_over += i
 
-        print([game.score for game in games])
         turns_game_over += sum([0 if fin else episode_length for fin in game_finished])
         number_of_fruits += sum([game.score for game in games])
     AvgTurnsGG = turns_game_over / (episode_length * batch_size)
