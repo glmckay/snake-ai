@@ -90,20 +90,19 @@ test_parameters = {
     "layers_struct": [
         [
             [tf.keras.layers.Reshape, {"target_shape": (opts["width"],opts["height"],1)}],
-            [tf.keras.layers.Conv2D, {"filters": 48, "kernel_size": 4, "activation":  tf.keras.activations.relu}],
-            [tf.keras.layers.Conv2D, {"filters": 24, "kernel_size": 4, "activation":  tf.keras.activations.relu}],
+            [tf.keras.layers.Conv2D, {"filters": 48, "kernel_size": 3, "activation":  tf.keras.activations.relu}],
             [tf.keras.layers.Flatten, {}],
-            [tf.keras.layers.Dense, {"units": opts["width"]*opts["height"]*5, "activation": tf.keras.activations.relu}],
+            [tf.keras.layers.Dense, {"units": opts["width"]*opts["height"]*10, "activation": tf.keras.activations.relu}],
             [tf.keras.layers.Dense, {"units": 4, "activation": None}]
         ]
     ],
-    "learning_rate": [3, 1, 5],
+    "learning_rate": [1,0.1,5],
     "optimizer": [tf.keras.optimizers.SGD],
     "batch_size": [100],
-    "episode_length": [100],
+    "episode_length": [500],
     "num_episodes": [100],
-    "rewards": [[-1, 1, -0.152]],
-    "gamma": [0.7, 0.5]
+    "rewards": [[-1,1,-0.1520]],
+    "gamma": [0.75]
 }
 
 # Other possible layer structure:
@@ -171,8 +170,6 @@ def csv_to_model(row):
                     parameters[param] = None
                 else:
                     parameters[param] = row[attribute]
-        print(k,parameters)
-        print(k, [layer_type[row[f"Layer{k}_Name"]] , parameters])
         layers.append([layer_type[row[f"Layer{k}_Name"]] , parameters])
         k += 1
     print(f"Creating model with layers {layers}")

@@ -176,10 +176,14 @@ def train_model(model, learning_rate, optimizer, batch_size, episode_length, num
                     games[i] = SnakeGame(**opts)
 
         batch_memory = aggregate_memories(memories)
-
+        lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(
+            float(learning_rate),
+            decay_steps = 10000,
+            decay_rate = 0.96,
+            staircase = True)
         train_step(
             model,
-            optimizer = optimizer(learning_rate = learning_rate),
+            optimizer = optimizer(lr_schedule),
             observations= np.stack(batch_memory.observations, 0),
             actions = np.array(batch_memory.actions),
             discounted_rewards = discount_rewards(batch_memory.rewards, GameOverReward, gamma),
@@ -191,7 +195,7 @@ def train_model(model, learning_rate, optimizer, batch_size, episode_length, num
 #       the average number of turns it takes for the model to game over (maximum number of turn is episode_length)
 #       the average number of fruits the model picks up before game over
 
-def score_model(model, episode_length = 100, num_episodes = 100, batch_size = 100):
+def score_model(model, episode_length = 500, num_episodes = 100, batch_size = 100):
     print(f"Begin scoring with episode length {episode_length}, number of episodes {num_episodes} and batch size {batch_size}.")
     turns_game_over = 0
     number_of_fruits = 0
